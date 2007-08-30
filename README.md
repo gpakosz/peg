@@ -26,5 +26,9 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.2** ([zip](peg/zipball/0.1.2), [tar.gz](peg/tarball/0.1.2)) &mdash; 2007-08-31  
+Grow buffers while (not if) they are too small.  
+Remove dependencies on grammar files.  
+Add more basic examples.  
 * **0.1.1** ([zip](peg/zipball/0.1.1), [tar.gz](peg/tarball/0.1.1)) &mdash; 2007-05-15  
 First public release.

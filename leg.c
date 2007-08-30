@@ -115,7 +115,7 @@ YY_VARIABLE(int      ) yyvalslen= 0;
 YY_LOCAL(int) yyrefill(void)
 {
   int yyn;
-  if (yybuflen - yypos < 512)
+  while (yybuflen - yypos < 512)
     {
       yybuflen *= 2;
       yybuf= realloc(yybuf, yybuflen);
@@ -180,7 +180,7 @@ YY_LOCAL(int) yymatchClass(unsigned char *bits)
 
 YY_LOCAL(void) yyDo(yyaction action, int begin, int end)
 {
-  if (yythunkpos >= yythunkslen)
+  while (yythunkpos >= yythunkslen)
     {
       yythunkslen *= 2;
       yythunks= realloc(yythunks, sizeof(yythunk) * yythunkslen);
@@ -198,7 +198,7 @@ YY_LOCAL(int) yyText(int begin, int end)
     yyleng= 0;
   else
     {
-      if (yytextlen < (yyleng - 1))
+      while (yytextlen < (yyleng - 1))
 	{
 	  yytextlen *= 2;
 	  yytext= realloc(yytext, yytextlen);
