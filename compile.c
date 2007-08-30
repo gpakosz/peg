@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2007-05-15 10:31:16 by piumarta on emilia
+ * Last edited: 2007-08-31 13:55:23 by piumarta on emilia.local
  */
 
 #include <stdio.h>
@@ -387,7 +387,7 @@ YY_VARIABLE(int      ) yyvalslen= 0;\n\
 YY_LOCAL(int) yyrefill(void)\n\
 {\n\
   int yyn;\n\
-  if (yybuflen - yypos < 512)\n\
+  while (yybuflen - yypos < 512)\n\
     {\n\
       yybuflen *= 2;\n\
       yybuf= realloc(yybuf, yybuflen);\n\
@@ -452,7 +452,7 @@ YY_LOCAL(int) yymatchClass(unsigned char *bits)\n\
 \n\
 YY_LOCAL(void) yyDo(yyaction action, int begin, int end)\n\
 {\n\
-  if (yythunkpos >= yythunkslen)\n\
+  while (yythunkpos >= yythunkslen)\n\
     {\n\
       yythunkslen *= 2;\n\
       yythunks= realloc(yythunks, sizeof(yythunk) * yythunkslen);\n\
@@ -470,7 +470,7 @@ YY_LOCAL(int) yyText(int begin, int end)\n\
     yyleng= 0;\n\
   else\n\
     {\n\
-      if (yytextlen < (yyleng - 1))\n\
+      while (yytextlen < (yyleng - 1))\n\
 	{\n\
 	  yytextlen *= 2;\n\
 	  yytext= realloc(yytext, yytextlen);\n\
