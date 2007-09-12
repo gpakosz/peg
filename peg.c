@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2007-05-15 10:34:42 by piumarta on emilia
+ * Last edited: 2007-09-12 00:27:30 by piumarta on vps2.piumarta.com
  */
 
 #include "tree.h"
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
       Rule_print(n);
 
   Rule_compile_c_header();
-  Rule_compile_c(rules);
+  if (rules) Rule_compile_c(rules);
 
   return 0;
 }
