@@ -26,6 +26,10 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.3** ([zip](peg/zipball/0.1.3), [tar.gz](peg/tarball/0.1.3)) &mdash; 2007-09-13  
+Allow matched braces inside `leg` actions.  
+Handle empty rules.  
+Handle empty grammars.  
 * **0.1.2** ([zip](peg/zipball/0.1.2), [tar.gz](peg/tarball/0.1.2)) &mdash; 2007-08-31  
 Grow buffers while (not if) they are too small.  
 Remove dependencies on grammar files.  

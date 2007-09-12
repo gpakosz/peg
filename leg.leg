@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2007-05-15 10:34:05 by piumarta on emilia
+# Last edited: 2007-09-12 00:22:41 by piumarta on emilia.local
 
 %{
 # include "tree.h"
@@ -279,7 +279,8 @@ int main(int argc, char **argv)
   for (; headers;  headers= headers->next)
     fprintf(output, "%s\n", headers->text);
 
-  Rule_compile_c(rules);
+  if (rules)
+    Rule_compile_c(rules);
 
   if (trailer)
     fprintf(output, "%s\n", trailer);
