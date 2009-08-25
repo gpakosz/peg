@@ -13,7 +13,7 @@
 .\" 
 .\" THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 .\" 
-.\" Last edited: 2007-05-12 17:12:40 by piumarta on emilia
+.\" Last edited: 2007-09-13 08:40:20 by piumarta on emilia.local
 .\"
 .TH PEG 1 "May 2007" "Version 0.1"
 .SH NAME
@@ -238,11 +238,10 @@ operators described below).
 .TP
 .BR { \ action\  }
 Curly braces surround actions.  The action is arbitray C source code
-to be executed at the end of matching.  (Currently the C source cannot
-contain any braces.  This restriction is likely to be removed in the
-future.)  Any input text that was matched before the action and
-delimited by angle brackets (see below) is made available within the
-action as the contents of the character array
+to be executed at the end of matching.  Any braces within the action
+must be properly nested.  Any input text that was matched before the
+action and delimited by angle brackets (see below) is made available
+within the action as the contents of the character array
 .IR yytext .
 The length of (number of characters in)
 .I yytext
@@ -823,9 +822,6 @@ pattern following the recursion into a repeatable suffix.
 .fi
 .SH BUGS
 The 'yy' and 'YY' prefixes cannot be changed.
-.PP
-Braces are not counted while scanning an action.  (A closing brace '}'
-therefore cannot appear in an action.)
 .PP
 Left recursion is detected in the input grammar but is not handled
 correctly in the generated parser.

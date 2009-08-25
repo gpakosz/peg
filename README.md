@@ -26,6 +26,9 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.4** ([zip](peg/zipball/0.1.4), [tar.gz](peg/tarball/0.1.4)) &mdash; 2009-08-26  
+Fix match of a single single quote character.  
+Rename `getline` -> `nextline` to avoid C namespace conflict.  
 * **0.1.3** ([zip](peg/zipball/0.1.3), [tar.gz](peg/tarball/0.1.3)) &mdash; 2007-09-13  
 Allow matched braces inside `leg` actions.  
 Handle empty rules.  
