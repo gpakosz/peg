@@ -16,7 +16,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2007-05-14 11:32:49 by piumarta on emilia
+# Last edited: 2009-10-26 14:04:30 by piumarta on ubuntu2
 
 %{
 # include <stdio.h>
@@ -35,7 +35,7 @@
   int   pc= -1, epc= -1;
   int   batch= 0;
 
-  int getline(char *buf, int max);
+  int nextline(char *buf, int max);
 
 # define min(x, y) ((x) < (y) ? (x) : (y))
 
@@ -48,7 +48,7 @@
         memcpy(buf, linep->text, result);	\
       }						\
     else					\
-      result= getline(buf, max_size);		\
+      result= nextline(buf, max_size);		\
   }
 
   union value {
@@ -198,7 +198,7 @@ void error(char *fmt, ...)
 # include <readline/history.h>
 #endif
 
-int getline(char *buf, int max)
+int nextline(char *buf, int max)
 {
   pc= -1;
   if (batch) exit(0);

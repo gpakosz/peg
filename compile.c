@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2007-08-31 13:55:23 by piumarta on emilia.local
+ * Last edited: 2011-11-24 09:27:23 by piumarta on emilia
  */
 
 #include <stdio.h>
@@ -120,10 +120,18 @@ static void Node_compile_c_ko(Node *node, int ko)
     case String:
       {
 	int len= strlen(node->string.value);
-	if (1 == len || (2 == len && '\\' == node->string.value[0]))
-	  fprintf(output, "  if (!yymatchChar('%s')) goto l%d;", node->string.value, ko);
+	if (1 == len)
+	  {
+	    if ('\'' == node->string.value[0])
+	      fprintf(output, "  if (!yymatchChar('\\'')) goto l%d;", ko);
+	    else
+	      fprintf(output, "  if (!yymatchChar('%s')) goto l%d;", node->string.value, ko);
+	  }
 	else
-	  fprintf(output, "  if (!yymatchString(\"%s\")) goto l%d;", node->string.value, ko);
+	  if (2 == len && '\\' == node->string.value[0])
+	    fprintf(output, "  if (!yymatchChar('%s')) goto l%d;", node->string.value, ko);
+	  else 
+	    fprintf(output, "  if (!yymatchString(\"%s\")) goto l%d;", node->string.value, ko);
       }
       break;
 
@@ -470,7 +478,7 @@ YY_LOCAL(int) yyText(int begin, int end)\n\
     yyleng= 0;\n\
   else\n\
     {\n\
-      while (yytextlen < (yyleng - 1))\n\
+      while (yytextlen < (yyleng + 1))\n\
 	{\n\
 	  yytextlen *= 2;\n\
 	  yytext= realloc(yytext, yytextlen);\n\
