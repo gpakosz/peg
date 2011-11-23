@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2011-11-24 09:27:23 by piumarta on emilia
+ * Last edited: 2011-11-24 10:10:20 by piumarta on emilia
  */
 
 #include <stdio.h>
@@ -35,6 +35,41 @@ static void charClassClear(unsigned char bits[], int c)	{ bits[c >> 3] &= ~(1 <<
 
 typedef void (*setter)(unsigned char bits[], int c);
 
+static inline int oigit(int c)	{ return '0' <= c && c <= '7'; }
+
+static int cnext(unsigned char **ccp)
+{
+    unsigned char *cclass= *ccp;
+    int c= *cclass++;
+    if (c)
+    {
+	if ('\\' == c && *cclass)
+	{
+	    switch (c= *cclass++)
+	    {
+		case 'a':  c= '\a'; break;	/* bel */
+		case 'b':  c= '\b'; break;	/* bs */
+		case 'e':  c= '\e'; break;	/* esc */
+		case 'f':  c= '\f'; break;	/* ff */
+		case 'n':  c= '\n'; break;	/* nl */
+		case 'r':  c= '\r'; break;	/* cr */
+		case 't':  c= '\t'; break;	/* ht */
+		case 'v':  c= '\v'; break;	/* vt */
+		default:
+		    if (oigit(c))
+		    {
+			c -= '0';
+			if (oigit(*cclass)) c= (c << 3) + *cclass++ - '0';
+			if (oigit(*cclass)) c= (c << 3) + *cclass++ - '0';
+		    }
+		    break;
+	    }
+	}
+	*ccp= cclass;
+    }
+    return c;
+}
+
 static char *makeCharClass(unsigned char *cclass)
 {
   unsigned char	 bits[32];
@@ -54,32 +89,21 @@ static char *makeCharClass(unsigned char *cclass)
       memset(bits, 0, 32);
       set= charClassSet;
     }
-  while ((c= *cclass++))
+
+  while (*cclass)
     {
-      if ('-' == c && *cclass && prev >= 0)
+      if ('-' == *cclass && cclass[1] && prev >= 0)
 	{
-	  for (c= *cclass++;  prev <= c;  ++prev)
+	  ++cclass;
+	  for (c= cnext(&cclass);  prev <= c;  ++prev)
 	    set(bits, prev);
 	  prev= -1;
 	}
-      else if ('\\' == c && *cclass)
+      else
 	{
-	  switch (c= *cclass++)
-	    {
-	    case 'a':  c= '\a'; break;	/* bel */
-	    case 'b':  c= '\b'; break;	/* bs */
-	    case 'e':  c= '\e'; break;	/* esc */
-	    case 'f':  c= '\f'; break;	/* ff */
-	    case 'n':  c= '\n'; break;	/* nl */
-	    case 'r':  c= '\r'; break;	/* cr */
-	    case 't':  c= '\t'; break;	/* ht */
-	    case 'v':  c= '\v'; break;	/* vt */
-	    default:		break;
-	    }
+	  c= cnext(&cclass);
 	  set(bits, prev= c);
 	}
-      else
-	set(bits, prev= c);
     }
 
   ptr= string;

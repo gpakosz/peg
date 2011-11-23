@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.6** ([zip](peg/zipball/0.1.6), [tar.gz](peg/tarball/0.1.6)) &mdash; 2011-11-24  
+Allow octal escapes in character classes.
 * **0.1.5** ([zip](peg/zipball/0.1.5), [tar.gz](peg/tarball/0.1.5)) &mdash; 2011-11-24  
 Remove dwarf sym dirs when cleaning.  
 Fix size calculation when resizing text buffers.  
