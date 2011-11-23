@@ -73,6 +73,7 @@ basic : .FORCE
 
 clean : .FORCE
 	rm -f *~ *.o *.[pl]eg.[cd] $(EXAMPLES)
+	rm -rf *.dSYM
 
 spotless : clean
 

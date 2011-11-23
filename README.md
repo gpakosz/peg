@@ -26,6 +26,10 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.5** ([zip](peg/zipball/0.1.5), [tar.gz](peg/tarball/0.1.5)) &mdash; 2011-11-24  
+Remove dwarf sym dirs when cleaning.  
+Fix size calculation when resizing text buffers.  
+Backslash can be escaped.  
 * **0.1.4** ([zip](peg/zipball/0.1.4), [tar.gz](peg/tarball/0.1.4)) &mdash; 2009-08-26  
 Fix match of a single single quote character.  
 Rename `getline` -> `nextline` to avoid C namespace conflict.  
