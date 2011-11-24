@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.7** ([zip](peg/zipball/0.1.7), [tar.gz](peg/tarball/0.1.7)) &mdash; 2011-11-25  
+Fix matching of 8-bit chars to allow utf-8 sequences in matching expressions (thanks to Grégory Pakosz).
 * **0.1.6** ([zip](peg/zipball/0.1.6), [tar.gz](peg/tarball/0.1.6)) &mdash; 2011-11-24  
 Allow octal escapes in character classes.
 * **0.1.5** ([zip](peg/zipball/0.1.5), [tar.gz](peg/tarball/0.1.5)) &mdash; 2011-11-24  

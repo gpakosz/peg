@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2011-11-24 10:10:20 by piumarta on emilia
+ * Last edited: 2011-11-25 11:16:57 by piumarta on emilia
  */
 
 #include <stdio.h>
@@ -440,7 +440,7 @@ YY_LOCAL(int) yymatchDot(void)\n\
 YY_LOCAL(int) yymatchChar(int c)\n\
 {\n\
   if (yypos >= yylimit && !yyrefill()) return 0;\n\
-  if (yybuf[yypos] == c)\n\
+  if ((unsigned char)yybuf[yypos] == c)\n\
     {\n\
       ++yypos;\n\
       yyprintf((stderr, \"  ok   yymatchChar(%c) @ %s\\n\", c, yybuf+yypos));\n\
@@ -471,7 +471,7 @@ YY_LOCAL(int) yymatchClass(unsigned char *bits)\n\
 {\n\
   int c;\n\
   if (yypos >= yylimit && !yyrefill()) return 0;\n\
-  c= yybuf[yypos];\n\
+  c= (unsigned char)yybuf[yypos];\n\
   if (bits[c >> 3] & (1 << (c & 7)))\n\
     {\n\
       ++yypos;\n\
