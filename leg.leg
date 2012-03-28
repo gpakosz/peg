@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2011-11-24 09:27:56 by piumarta on emilia
+# Last edited: 2012-03-23 03:16:17 by piumarta on emilia
 
 %{
 # include "tree.h"
@@ -118,7 +118,7 @@ char=		'\\' [-abefnrtv'"\[\]\\]
 
 action=		'{' < braces* > '}' -
 
-braces=		'{' (!'}' .)* '}'
+braces=		'{' braces* '}'
 |		!'}' .
 
 EQUAL=		'=' -
