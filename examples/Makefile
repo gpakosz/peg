@@ -1,4 +1,4 @@
-EXAMPLES = test rule accept wc dc dcv calc basic
+EXAMPLES = test rule accept wc dc dcv calc basic localctx
 
 CFLAGS = -g -O3
 
@@ -67,6 +67,14 @@ basic : .FORCE
 	../leg -o basic.leg.c basic.leg
 	$(CC) $(CFLAGS) -o basic basic.leg.c
 	( echo 'load "test"'; echo "run" ) | ./basic | $(TEE) $@.out
+	$(DIFF) $@.ref $@.out
+	rm -f $@.out
+	@echo
+
+localctx : .FORCE
+	../peg -o test.peg.c test.peg
+	$(CC) $(CFLAGS) -o localctx localctx.c
+	echo 'ab.ac.ad.ae.afg.afh.afg.afh.afi.afj.' | ./$@ | $(TEE) $@.out
 	$(DIFF) $@.ref $@.out
 	rm -f $@.out
 	@echo
