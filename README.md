@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.9** ([zip](peg/zipball/0.1.9), [tar.gz](peg/tarball/0.1.9)) &mdash; 2012-04-29  
+Move global state into a structure to facilitate reentrant and thread-safe parsers (thanks to Dmitry Lipovoi).
 * **0.1.8** ([zip](peg/zipball/0.1.8), [tar.gz](peg/tarball/0.1.8)) &mdash; 2012-03-29  
 Allow nested, matched braces within actions.
 * **0.1.7** ([zip](peg/zipball/0.1.7), [tar.gz](peg/tarball/0.1.7)) &mdash; 2011-11-25  
