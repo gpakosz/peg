@@ -1,0 +1,1 @@
+Fix matching of 8-bit chars to allow utf-8 sequences in matching expressions (thanks to Grégory Pakosz).
