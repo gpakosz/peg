@@ -1,0 +1,1 @@
+Remove dwarf sym dirs when cleaning. Fix size calculation when resizing text buffers. Backslash can be escaped.
