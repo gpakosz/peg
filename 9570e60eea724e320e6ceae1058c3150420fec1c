@@ -1,0 +1,1 @@
+Move global state into a structure to facilitate reentrant and thread-safe parsers (thanks to Dmitry Lipovoi).
