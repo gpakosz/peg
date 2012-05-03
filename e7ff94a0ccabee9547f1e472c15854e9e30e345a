@@ -1,0 +1,1 @@
+Fix match of a single single quote character. Rename getline -> nextline to avoid C namespace conflict.
