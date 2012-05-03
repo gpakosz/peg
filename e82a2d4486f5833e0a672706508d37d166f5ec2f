@@ -1,0 +1,1 @@
+Grow buffers while (not if) they are too small. Remove dependencies on grammar files. Add more basic examples.
