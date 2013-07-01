@@ -13,7 +13,7 @@
 .\" 
 .\" THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 .\" 
-.\" Last edited: 2012-04-29 16:58:44 by piumarta on emilia
+.\" Last edited: 2012-05-17 15:38:34 by piumarta on emilia
 .\"
 .TH PEG 1 "April 2012" "Version 0.1"
 .SH NAME
@@ -487,6 +487,36 @@ in
 .I leg
 (with the final semicolon being optional, as described next).
 .TP
+.IB exp \ ~ \ {\ action\ }
+A postfix operator
+.BI ~ {\ action\ }
+can be placed after any expression and will behave like a normal
+action (arbitrary C code) except that it is invoked only when
+.I exp
+fails.  It binds less tightly than any other operator except alternation and sequencing, and
+is intended to make error handling and recovery code easier to write.
+Note that
+.I yytext
+and
+.I yyleng
+are not available inside these actions, but the pointer variable
+.I yy
+is available to give the code access to any user-defined members
+of the parser state (see "CUSTOMISING THE PARSER" below).
+Note also that
+.I exp
+is always a single expression; to invoke an error action for any
+failure within a sequence, parentheses must be used to group the
+sequence into a single expression.
+.nf
+
+    rule = e1 e2 e3 ~{ error("e[12] ok; e3 has failed"); }
+         | ...
+
+    rule = (e1 e2 e3) ~{ error("one of e[123] has failed"); }
+         | ...
+.fi
+.TP
 .IB pattern\  ;
 A semicolon punctuator can optionally terminate a
 .IR pattern .
@@ -594,8 +624,10 @@ above description.
     
     expression =    sequence ( BAR sequence )*
     
-    sequence =      prefix+
+    sequence =      error+
     
+    error =         prefix ( TILDE action )?
+
     prefix =        AND action
     |               ( AND | NOT )? suffix
     
@@ -625,7 +657,10 @@ above description.
     |               '\\\\' [0-7][0-7]?
     |               !'\\\\' .
     
-    action =        '{' < [^}]* > '}' -
+    action =        '{' < braces* > '}' -
+    
+    braces =        '{' braces* '}'
+    |               !'}' .
     
     EQUAL =         '=' -
     COLON =         ':' -
@@ -641,6 +676,7 @@ above description.
     DOT =           '.' -
     BEGIN =         '<' -
     END =           '>' -
+    TILDE =         '~' -
     RPERCENT =      '%}' -
     
     - =             ( space | comment )*
@@ -698,6 +734,8 @@ By default, the YY_INPUT macro is defined as follows.
     }
 
 .fi
+Note that if YY_CTX_LOCAL is defined (see below) then an additional
+first argument, containing the parser context, is passed to YY_INPUT.
 .TP
 .B YY_DEBUG
 If this symbols is defined then additional code will be included in
@@ -746,7 +784,7 @@ be redefined to declare them 'static'.
 
 .fi
 .TP
-.BI YY_CTX_LOCAL
+.B YY_CTX_LOCAL
 If this symbol is defined during compilation of a generated parser
 then global parser state will be kept in a structure of
 type 'yycontext' which can be declared as a local variable.  This
@@ -777,16 +815,58 @@ A trivial but complete example is as follows.
 Note that if this symbol is undefined then the compiled parser will
 statically allocate its global state and will be neither reentrant nor
 thread-safe.
+Note also that the parser yycontext structure is initialised automatically
+the first time
+.IR yyparse ()
+is called; this structure
+.B must
+therefore be properly initliased to zero before the first call to
+.IR yyparse ().
 .TP
-.BI YY_CTX_MEMBERS
+.B YY_CTX_MEMBERS
 If YY_CTX_LOCAL is defined (see above) then the macro YY_CTX_MEMBERS
 can be defined to expand to any additional member field declarations
 that the client would like included in the declaration of
 the 'yycontext' structure type.  These additional members are
 otherwise ignored by the generated parser.  The instance
 of 'yycontext' associated with the currently-active parser is
-available in actions through the pointer variable
-.IR yyctx .
+available within actions as the pointer variable
+.IR yy .
+.TP
+.B YY_BUFFER_SIZE
+The initial size of the text buffer, in bytes.  The default is 1024
+and the buffer size is doubled whenever required to meet demand during
+parsing.  An application that typically parses much longer strings
+could increase this to avoid unnecessary buffer reallocation.
+.TP
+.B YY_STACK_SIZE
+The initial size of the variable and action stacks.  The default is
+128, which is doubled whenever required to meet demand during parsing.
+Applications that have deep call stacks with many local variables, or
+that perform many actions after a single successful match, could increase
+this to avoid unnecessary buffer reallocation.
+.TP
+.BI YY_MALLOC( YY , \ SIZE )
+The memory allocator for all parser-related storage.  The parameters
+are the current yycontext structure and the number of bytes to
+allocate.  The default definition is:
+.RI malloc( SIZE )
+.TP
+.BI YY_REALLOC( YY , \ PTR , \ SIZE )
+The memory reallocator for dynamically-grown storage (such as text
+buffers and variable stacks).  The parameters are the current
+yycontext structure, the previously-allocated storage, and the number
+of bytes to which that storage should be grown.  The default definition is:
+.RI realloc( PTR , \ SIZE )
+.TP
+.BI YY_FREE( YY , \ PTR )
+The memory deallocator.  The parameters are the current yycontext
+structure and the storage to deallocate.  The default definition is:
+.RI free( PTR )
+.TP
+.B YYRELEASE
+The name of the function that releases all resources held by a
+yycontext structure.  The default value is 'yyrelease'.
 .PP
 The following variables can be reffered to within actions.
 .TP
@@ -804,9 +884,82 @@ The most recent matched text delimited by '<' and '>' is stored in this variable
 .B int yyleng
 This variable indicates the number of characters in 'yytext'.
 .TP
-.B yycontext *yyctx
+.B yycontext *yy
 This variable points to the instance of 'yycontext' associated with
 the currently-active parser.
+.PP
+Programs that wish to release all the resources associated with a
+parser can use the following function.
+.TP
+.BI yyrelease(yycontext * yy )
+Returns all parser-allocated storage associated with
+.I yy
+to the system.  The storage will be reallocated on the next call to
+.IR yyparse ().
+.PP
+Note that the storage for the yycontext structure itself is never
+allocated or reclaimed implicitly.  The application must allocate
+these structures in automatic storage, or use
+.IR calloc ()
+and
+.IR free ()
+to manage them explicitly.  The example in the following section
+demonstrates one approach to resource management.
+.SH LEG EXAMPLE: EXTENDING THE PARSER'S CONTEXT
+The
+.I yy
+variable passed to actions contains the state of the parser plus any
+additional fields defined by YY_CTX_MEMBERS.  Theses fields can be
+used to store application-specific information that is global to a
+particular call of
+.IR yyparse ().
+A trivial but complete
+.I leg
+example follows in which the yycontext
+structure is extended with a
+.I count
+of the number of newline characters
+seen in the input so far (the grammar otherwise consumes and ignores
+the entire input).  The caller of
+.IR yyparse ()
+uses
+.I count
+to print the number of lines of input that were read.
+
+.nf
+
+    %{
+    #define YY_CTX_LOCAL 1
+    #define YY_CTX_MEMBERS \\
+      int count;
+    %}
+
+    Char    = ('\\n' | '\\r\\n' | '\\r')        { yy->count++ }
+            | .
+
+    %%
+
+    #include <stdio.h>
+    #include <string.h>
+
+    int main()
+    {
+        /* create a local parser context in automatic storage */
+        yycontext yy;
+        /* the context *must* be initialised to zero before first use*/
+        memset(&yy, 0, sizeof(yy));
+
+        while (yyparse(&yy))
+            ;
+        printf("%d newlines\\n", yy.count);
+
+        /* release all resources associated with the context */
+        yyrelease(&yy);
+
+        return 0;
+    }
+
+.fi
 .SH DIAGNOSTICS
 .I peg
 and
@@ -867,6 +1020,9 @@ pattern following the recursion into a repeatable suffix.
 
 .fi
 .SH BUGS
+You have to type 'man peg' to read the manual page for
+.IR leg (1).
+.PP
 The 'yy' and 'YY' prefixes cannot be changed.
 .PP
 Left recursion is detected in the input grammar but is not handled
@@ -875,14 +1031,18 @@ correctly in the generated parser.
 Diagnostics for errors in the input grammar are obscure and not
 particularly helpful.
 .PP
+The operators
+.BR ! \ \c
+and
+.B ~
+should really be named the other way around.
+.PP
 Several commonly-used
 .IR lex (1)
 features (yywrap(), yyin, etc.) are completely absent.
 .PP
 The generated parser foes not contain '#line' directives to direct C
 compiler errors back to the grammar description when appropriate.
-.IR lex (1)
-features (yywrap(), yyin, etc.) are completely absent.
 .SH SEE ALSO
 D. Val Schorre,
 .I META II, a syntax-oriented compiler writing language,

@@ -13,13 +13,18 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2007-05-15 10:32:09 by piumarta on emilia
+ * Last edited: 2012-05-15 23:29:12 by piumarta on emilia
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#ifdef WIN32
+# undef inline
+# define inline __inline
+#endif
 
 #include "tree.h"
 
@@ -150,7 +155,7 @@ Node *makeAction(char *text)
     char *ptr;
     for (ptr= node->action.text;  *ptr;  ++ptr)
       if ('$' == ptr[0] && '$' == ptr[1])
-	ptr[1]= ptr[0]= 'y';
+	ptr[1]= ptr[0]= '_';
   }
   return node;
 }
@@ -159,6 +164,14 @@ Node *makePredicate(char *text)
 {
   Node *node= newNode(Predicate);
   node->predicate.text= strdup(text);
+  return node;
+}
+
+Node *makeError(Node *e, char *text)
+{
+  Node *node= newNode(Error);
+  node->error.element= e;
+  node->error.text= strdup(text);
   return node;
 }
 
