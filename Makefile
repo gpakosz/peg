@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall $(OFLAGS) $(XFLAGS)
+CFLAGS = -g -Wall $(OFLAGS) $(XFLAGS) -Isrc
 OFLAGS = -O3 -DNDEBUG
 #OFLAGS = -pg
 
@@ -17,47 +17,69 @@ leg : leg.o $(OBJS)
 ROOT	=
 PREFIX	= /usr/local
 BINDIR	= $(ROOT)$(PREFIX)/bin
+MANDIR	= $(ROOT)$(PREFIX)/man/man1
 
-install : $(BINDIR)/peg $(BINDIR)/leg
+install : $(BINDIR) $(BINDIR)/peg $(BINDIR)/leg $(MANDIR) $(MANDIR)/peg.1
+
+$(BINDIR) :
+	mkdir -p $(BINDIR)
 
 $(BINDIR)/% : %
 	cp -p $< $@
 	strip $@
 
+$(MANDIR) :
+	mkdir -p $(MANDIR)
+
+$(MANDIR)/% : src/%
+	cp -p $< $@
+
 uninstall : .FORCE
 	rm -f $(BINDIR)/peg
 	rm -f $(BINDIR)/leg
+	rm -f $(MANDIR)/peg.1
 
-peg.o : peg.c peg.peg-c
+%.o : src/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.peg-c : %.peg compile.c
-	./peg -o $@ $<
+peg.o : src/peg.c src/peg.peg-c
 
-leg.o : leg.c
-
-leg.c : leg.leg compile.c
-	./leg -o $@ $<
+leg.o : src/leg.c
 
 check : check-peg check-leg
 
-check-peg : peg .FORCE
-	./peg < peg.peg > peg.out
-	diff peg.peg-c peg.out
-	rm peg.out
+check-peg : peg.peg-c .FORCE
+	diff src/peg.peg-c peg.peg-c
 
-check-leg : leg .FORCE
-	./leg < leg.leg > leg.out
-	diff leg.c leg.out
-	rm leg.out
+check-leg : leg.c .FORCE
+	diff src/leg.c leg.c
 
-test examples : .FORCE
+peg.peg-c : src/peg.peg peg
+	./peg -o $@ $<
+
+leg.c : src/leg.leg leg
+	./leg -o $@ $<
+
+new : newpeg newleg
+
+newpeg : peg.peg-c
+	mv src/peg.peg-c src/peg.peg-c-
+	mv peg.peg-c src/.
+
+newleg : leg.c
+	mv src/leg.c src/leg.c-
+	mv leg.c src/.
+
+test examples : peg leg .FORCE
 	$(SHELL) -ec '(cd examples;  $(MAKE))'
 
 clean : .FORCE
-	rm -f *~ *.o *.peg.[cd] *.leg.[cd]
+	rm -f src/*~ *~ *.o *.peg.[cd] *.leg.[cd] peg.peg-c leg.c
 	$(SHELL) -ec '(cd examples;  $(MAKE) $@)'
 
 spotless : clean .FORCE
+	rm -f src/*-
+	rm -rf build
 	rm -f peg
 	rm -f leg
 	$(SHELL) -ec '(cd examples;  $(MAKE) $@)'
