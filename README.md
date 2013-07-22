@@ -26,6 +26,9 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.12** ([zip](../../archive/0.1.12.zip), [tar.gz](../../archive/0.1.12.tar.gz)) &mdash; 2013-07-20  
+Use BSD-licensed `getopt()` in Windows build.  
+Verbose mode handles Variable nodes.  
 * **0.1.11** ([zip](../../archive/0.1.11.zip), [tar.gz](../../archive/0.1.11.tar.gz)) &mdash; 2013-06-03  
 Add error actions via `"~"` operator.  
 Support declaration of local variables at the top level of semantic actions.  

@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2012-05-15 23:29:12 by piumarta on emilia
+ * Last edited: 2013-07-20 12:47:35 by piumarta on margaux1
  */
 
 #include <stdio.h>
@@ -310,6 +310,7 @@ static void Node_fprint(FILE *stream, Node *node)
   switch (node->type)
     {
     case Rule:		fprintf(stream, " %s", node->rule.name);				break;
+    case Variable:	fprintf(stream, " %s:", node->variable.name);				break;
     case Name:		fprintf(stream, " %s", node->name.rule->rule.name);			break;
     case Dot:		fprintf(stream, " .");							break;
     case Character:	fprintf(stream, " '%s'", node->character.value);			break;
