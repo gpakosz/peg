@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2012-05-16 08:56:08 by piumarta on emilia
+# Last edited: 2013-08-16 00:14:11 by piumarta on emilia
 
 %{
 # include "tree.h"
@@ -115,6 +115,8 @@ class=		'[' < ( !']' range )* > ']' -
 range=		char '-' char | char
 
 char=		'\\' [-abefnrtv'"\[\]\\]
+|		'\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]
+|		'\\' 'x'[0-9A-Fa-f]
 |		'\\' [0-3][0-7][0-7]
 |		'\\' [0-7][0-7]?
 |		!'\\' .
