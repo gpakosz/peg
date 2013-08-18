@@ -1,4 +1,4 @@
-/* Copyright (c) 2007, 2012 by Ian Piumarta
+/* Copyright (c) 2007--2013 by Ian Piumarta
  * All rights reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2013-06-06 12:24:20 by piumarta on ubuntu
+ * Last edited: 2013-08-16 00:58:47 by piumarta on emilia
  */
 
 #include <stdio.h>
@@ -40,7 +40,16 @@ static void charClassClear(unsigned char bits[], int c)	{ bits[c >> 3] &= ~(1 <<
 
 typedef void (*setter)(unsigned char bits[], int c);
 
-static inline int oigit(int c)	{ return '0' <= c && c <= '7'; }
+static inline int oigit(int c)	{ return ('0' <= c && c <= '7'); }
+static inline int higit(int c)	{ return ('0' <= c && c <= '9') || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'); }
+
+static inline int hexval(int c)
+{
+    if ('0' <= c && c <= '9') return c - '0';
+    if ('A' <= c && c <= 'F') return 10 - 'A' + c;
+    if ('a' <= c && c <= 'f') return 10 - 'a' + c;
+    return 0;
+}
 
 static int cnext(unsigned char **ccp)
 {
@@ -60,6 +69,11 @@ static int cnext(unsigned char **ccp)
 		case 'r':  c= '\r';   break;	/* cr */
 		case 't':  c= '\t';   break;	/* ht */
 		case 'v':  c= '\v';   break;	/* vt */
+		case 'x':
+		    c= 0;
+		    if (higit(*cclass)) c= (c << 4) + hexval(*cclass++);
+		    if (higit(*cclass)) c= (c << 4) + hexval(*cclass++);
+		    break;
 		default:
 		    if (oigit(c))
 		    {
@@ -159,7 +173,7 @@ static void Node_compile_c_ko(Node *node, int ko)
 	else
 	  if (2 == len && '\\' == node->string.value[0])
 	    fprintf(output, "  if (!yymatchChar(yy, '%s')) goto l%d;", node->string.value, ko);
-	  else 
+	  else
 	    fprintf(output, "  if (!yymatchString(yy, \"%s\")) goto l%d;", node->string.value, ko);
       }
       break;
@@ -173,7 +187,13 @@ static void Node_compile_c_ko(Node *node, int ko)
       break;
 
     case Predicate:
-      fprintf(output, "  yyText(yy, yy->__begin, yy->__end);  if (!(%s)) goto l%d;", node->action.text, ko);
+      fprintf(output, "  yyText(yy, yy->__begin, yy->__end);  {\n");
+      fprintf(output, "#define yytext yy->__text\n");
+      fprintf(output, "#define yyleng yy->__textlen\n");
+      fprintf(output, "if (!(%s)) goto l%d;\n", node->action.text, ko);
+      fprintf(output, "#undef yytext\n");
+      fprintf(output, "#undef yyleng\n");
+      fprintf(output, "  }");
       break;
 
     case Error:
