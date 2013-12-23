@@ -1,3 +1,11 @@
+2013-12-18  piumarta  <com -dot- gmail -at- piumarta (backwards)>
+
+	* src/version.h: 0.1.15
+
+	* src/compile.c: YY_FREE takes context and pointer as arguments.
+
+	* YYRELEASE: Pass yyctx and pointer to YY_FREE.
+
 2013-12-01  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
 
 	* src/version.h: 0.1.14

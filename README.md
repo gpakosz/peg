@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.15** ([zip](../../archive/0.1.15.zip), [tar.gz](../../archive/0.1.15.tar.gz)) &mdash; 2013-12-17  
+Calls to `YY_FREE` fixed (thanks to Andrew Dunham).
 * **0.1.14** ([zip](../../archive/0.1.14.zip), [tar.gz](../../archive/0.1.14.tar.gz)) &mdash; 2013-12-01  
 Documentation typos fixed (thanks to Giulio Paci).
 * **0.1.13** ([zip](../../archive/0.1.13.zip), [tar.gz](../../archive/0.1.13.tar.gz)) &mdash; 2013-08-16  
