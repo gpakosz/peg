@@ -1,1 +1,6 @@
-Add error actions via ~ operator. Support declaration of local variables at the top level of semantic actions. Dynamically grow data structures to remove artificial limits on rule recursion (thanks to Alex Klinkhamer). Many small changes to better support C++. Add build files for Win32 and MacOS (thanks to Fyodor Sheremetyev). Update manual page to describe new features.
+Add error actions via ~ operator.
+Support declaration of local variables at the top level of semantic actions.
+Dynamically grow data structures to remove artificial limits on rule recursion (thanks to Alex Klinkhamer).
+Many small changes to better support C++.
+Add build files for Win32 and MacOS (thanks to Fyodor Sheremetyev).
+Update manual page to describe new features.
