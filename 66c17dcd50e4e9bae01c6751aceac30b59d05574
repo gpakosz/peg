@@ -1,1 +1,2 @@
-Use BSD-licensed getopt() in Windows build. Verbose mode handles Variable nodes.
+Use BSD-licensed getopt() in Windows build.
+Verbose mode handles Variable nodes.
