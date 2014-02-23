@@ -1,0 +1,1 @@
+Predicate actions can refer to yytext (thanks to Grégory Pakosz). Hexadecimal character escapes are supported by leg (thanks to Hugo Etchegoyen).
