@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2013-08-16 00:14:11 by piumarta on emilia
+# Last edited: 2016-02-19 11:04:51 by piumarta on zora
 
 %{
 # include "tree.h"
@@ -82,7 +82,8 @@ sequence=	error   (error				{ Node *f= pop();  push(Sequence_append(pop(), f)); 
 error=		prefix  (TILDE action			{ push(makeError(pop(), yytext)); }
 			)?
 
-prefix=		AND action				{ push(makePredicate(yytext)); }
+prefix=		AT  action				{ push(makeInline(yytext)); }
+|		AND action				{ push(makePredicate(yytext)); }
 |		AND suffix				{ push(makePeekFor(pop())); }
 |		NOT suffix				{ push(makePeekNot(pop())); }
 |		    suffix
@@ -132,6 +133,7 @@ SEMICOLON=	';' -
 BAR=		'|' -
 AND=		'&' -
 NOT=		'!' -
+AT=		'@' -
 QUESTION=	'?' -
 STAR=		'*' -
 PLUS=		'+' -

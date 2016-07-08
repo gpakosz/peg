@@ -13,12 +13,12 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2012-05-15 22:37:53 by piumarta on emilia
+ * Last edited: 2016-02-19 11:06:20 by piumarta on zora
  */
 
 #include <stdio.h>
 
-enum { Unknown= 0, Rule, Variable, Name, Dot, Character, String, Class, Action, Predicate, Error, Alternate, Sequence, PeekFor, PeekNot, Query, Star, Plus };
+enum { Unknown= 0, Rule, Variable, Name, Dot, Character, String, Class, Action, Inline, Predicate, Error, Alternate, Sequence, PeekFor, PeekNot, Query, Star, Plus };
 
 enum {
   RuleUsed	= 1<<0,
@@ -35,6 +35,7 @@ struct Character { int type;  Node *next;   char *value;								};
 struct String	 { int type;  Node *next;   char *value;								};
 struct Class	 { int type;  Node *next;   unsigned char *value;							};
 struct Action	 { int type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;				};
+struct Inline    { int type;  Node *next;   char *text;									};
 struct Predicate { int type;  Node *next;   char *text;									};
 struct Error	 { int type;  Node *next;   Node *element;  char *text;							};
 struct Alternate { int type;  Node *next;   Node *first;  Node *last;							};
@@ -57,6 +58,7 @@ union Node
   struct String		string;
   struct Class		cclass;
   struct Action		action;
+  struct Inline		inLine;
   struct Predicate	predicate;
   struct Error		error;
   struct Alternate	alternate;
@@ -89,6 +91,7 @@ extern Node *makeCharacter(char *text);
 extern Node *makeString(char *text);
 extern Node *makeClass(char *text);
 extern Node *makeAction(char *text);
+extern Node *makeInline(char *text);
 extern Node *makePredicate(char *text);
 extern Node *makeError(Node *e, char *text);
 extern Node *makeAlternate(Node *e);
