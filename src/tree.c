@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2013-07-20 12:47:35 by piumarta on margaux1
+ * Last edited: 2016-02-19 11:21:30 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -157,6 +157,13 @@ Node *makeAction(char *text)
       if ('$' == ptr[0] && '$' == ptr[1])
 	ptr[1]= ptr[0]= '_';
   }
+  return node;
+}
+
+Node *makeInline(char *text)
+{
+  Node *node= newNode(Inline);
+  node->inLine.text= strdup(text);
   return node;
 }
 

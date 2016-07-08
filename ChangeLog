@@ -1,3 +1,13 @@
+2016-06-25  piumarta  <com -dot- gmail -at- piumarta (backwards)>
+
+	* src/version.h: 0.1.16
+
+	* src/tree.[ch], src/compile.c, src/leg.leg: Add @-actions.
+
+	* src/peg.1: Explain @-actions.
+
+	* src/peg/peg-c, src/leg.c: Regenerate C source.
+
 2013-12-18  piumarta  <com -dot- gmail -at- piumarta (backwards)>
 
 	* src/version.h: 0.1.15

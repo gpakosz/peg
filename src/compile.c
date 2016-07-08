@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2013-12-18 10:09:42 by piumarta on linux32
+ * Last edited: 2016-02-19 11:08:58 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -186,11 +186,20 @@ static void Node_compile_c_ko(Node *node, int ko)
       fprintf(output, "  yyDo(yy, yy%s, yy->__begin, yy->__end);", node->action.name);
       break;
 
+    case Inline:
+      fprintf(output, "  yyText(yy, yy->__begin, yy->__end);\n");
+      fprintf(output, "#define yytext yy->__text\n");
+      fprintf(output, "#define yyleng yy->__textlen\n");
+      fprintf(output, "%s;\n", node->inLine.text);
+      fprintf(output, "#undef yytext\n");
+      fprintf(output, "#undef yyleng\n");
+      break;
+
     case Predicate:
       fprintf(output, "  yyText(yy, yy->__begin, yy->__end);  {\n");
       fprintf(output, "#define yytext yy->__text\n");
       fprintf(output, "#define yyleng yy->__textlen\n");
-      fprintf(output, "if (!(%s)) goto l%d;\n", node->action.text, ko);
+      fprintf(output, "if (!(%s)) goto l%d;\n", node->predicate.text, ko);
       fprintf(output, "#undef yytext\n");
       fprintf(output, "#undef yyleng\n");
       fprintf(output, "  }");
@@ -755,6 +764,7 @@ int consumesInput(Node *node)
     case String:	return strlen(node->string.value) > 0;
     case Class:		return 1;
     case Action:	return 0;
+    case Inline:	return 0;
     case Predicate:	return 0;
     case Error:		return consumesInput(node->error.element);
 
