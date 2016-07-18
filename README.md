@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.17** ([zip](../../archive/0.1.17.zip), [tar.gz](../../archive/0.1.17.tar.gz)) &mdash; 2016-07-14  
+Emit `#line` directives for header and trailer in the generated source file.
 * **0.1.16** ([zip](../../archive/0.1.16.zip), [tar.gz](../../archive/0.1.16.tar.gz)) &mdash; 2016-06-25  
 Add `@{...}` actions that are performed during matching.
 * **0.1.15** ([zip](../../archive/0.1.15.zip), [tar.gz](../../archive/0.1.15.tar.gz)) &mdash; 2013-12-17  

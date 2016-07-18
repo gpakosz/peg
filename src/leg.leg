@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2016-02-19 11:04:51 by piumarta on zora
+# Last edited: 2016-07-14 20:26:22 by piumarta on zora
 
 %{
 # include "tree.h"
@@ -31,6 +31,7 @@
   typedef struct Header Header;
 
   struct Header {
+    int	    line;
     char   *text;
     Header *next;
   };
@@ -40,20 +41,22 @@
   int   verboseFlag= 0;
 
   static int	 lineNumber= 0;
+  static int	 headerLine= 0;
   static char	*fileName= 0;
+  static int	 trailerLine= 0;
   static char	*trailer= 0;
   static Header	*headers= 0;
 
-  void makeHeader(char *text);
-  void makeTrailer(char *text);
+  void makeHeader(int line, char *text);
+  void makeTrailer(int line, char *text);
 
   void yyerror(char *message);
 
-# define YY_INPUT(buf, result, max)		\
-  {						\
-    int c= getc(input);				\
-    if ('\n' == c || '\r' == c) ++lineNumber;	\
-    result= (EOF == c) ? 0 : (*(buf)= c, 1);	\
+# define YY_INPUT(buf, result, max)			\
+  {							\
+    int c= getc(input);					\
+    /* if ('\n' == c || '\r' == c) ++lineNumber; */	\
+    result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
   }
 
 # define YY_LOCAL(T)	static T
@@ -64,9 +67,12 @@
 
 grammar=	- ( declaration | definition )+ trailer? end-of-file
 
-declaration=	'%{' < ( !'%}' . )* > RPERCENT		{ makeHeader(yytext); }						#{YYACCEPT}
+declaration=	'%{'					{ headerLine= lineNumber; }
+		< ( !'%}' (end-of-line | .) )* >
+		RPERCENT				{ makeHeader(headerLine, yytext); }				#{YYACCEPT}
 
-trailer=	'%%' < .* >				{ makeTrailer(yytext); }					#{YYACCEPT}
+trailer=	'%%'					{ headerLine= lineNumber }
+		< .* >					{ makeTrailer(headerLine, yytext); }				#{YYACCEPT}
 
 definition=	identifier 				{ if (push(beginRule(findRule(yytext)))->rule.expression)
 							    fprintf(stderr, "rule '%s' redefined\n", yytext); }
@@ -125,7 +131,7 @@ char=		'\\' [-abefnrtv'"\[\]\\]
 action=		'{' < braces* > '}' -
 
 braces=		'{' braces* '}'
-|		!'}' .
+|		!'}' ( end-of-line | . )
 
 EQUAL=		'=' -
 COLON=		':' -
@@ -148,7 +154,7 @@ RPERCENT=	'%}' -
 -=		(space | comment)*
 space=		' ' | '\t' | end-of-line
 comment=	'#' (!end-of-line .)* end-of-line
-end-of-line=	'\r\n' | '\n' | '\r'
+end-of-line=	( '\r\n' | '\n' | '\r' )		{ ++lineNumber }
 end-of-file=	!.
 
 %%
@@ -178,16 +184,18 @@ void yyerror(char *message)
   exit(1);
 }
 
-void makeHeader(char *text)
+void makeHeader(int line, char *text)
 {
   Header *header= (Header *)malloc(sizeof(Header));
+  header->line= line;
   header->text= strdup(text);
   header->next= headers;
   headers= header;
 }
 
-void makeTrailer(char *text)
+void makeTrailer(int line, char *text)
 {
+  trailerLine= line;
   trailer= strdup(text);
 }
 
@@ -288,13 +296,13 @@ int main(int argc, char **argv)
   Rule_compile_c_header();
 
   for (; headers;  headers= headers->next)
-    fprintf(output, "%s\n", headers->text);
+    fprintf(output, "#line %i \"%s\"\n%s\n", headers->line, fileName, headers->text);
 
   if (rules)
     Rule_compile_c(rules);
 
   if (trailer)
-    fprintf(output, "%s\n", trailer);
+    fprintf(output, "#line %i \"%s\"\n%s\n", trailerLine, fileName, trailer);
 
   return 0;
 }
