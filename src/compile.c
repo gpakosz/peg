@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-02-19 11:08:58 by piumarta on zora
+ * Last edited: 2016-07-22 09:43:05 by piumarta on zora.local
  */
 
 #include <stdio.h>
@@ -800,7 +800,7 @@ int consumesInput(Node *node)
 }
 
 
-void Rule_compile_c(Node *node)
+void Rule_compile_c(Node *node, int nolines)
 {
   Node *n;
 
@@ -817,6 +817,8 @@ void Rule_compile_c(Node *node)
       defineVariables(n->action.rule->rule.variables);
       fprintf(output, "  yyprintf((stderr, \"do yy%s\\n\"));\n", n->action.name);
       fprintf(output, "  {\n");
+      if (!nolines)
+	fprintf(output, "#line %i\n", n->action.line);
       fprintf(output, "  %s;\n", n->action.text);
       fprintf(output, "  }\n");
       undefineVariables(n->action.rule->rule.variables);

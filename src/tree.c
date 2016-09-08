@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-02-19 11:21:30 by piumarta on zora
+ * Last edited: 2016-07-15 10:25:14 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -140,7 +140,7 @@ Node *makeClass(char *text)
   return node;
 }
 
-Node *makeAction(char *text)
+Node *makeAction(int lineNumber, char *text)
 {
   Node *node= newNode(Action);
   char name[1024];
@@ -150,6 +150,7 @@ Node *makeAction(char *text)
   node->action.text= strdup(text);
   node->action.list= actions;
   node->action.rule= thisRule;
+  node->action.line= lineNumber;
   actions= node;
   {
     char *ptr;

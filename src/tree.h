@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-02-19 11:06:20 by piumarta on zora
+ * Last edited: 2016-07-22 09:42:48 by piumarta on zora.local
  */
 
 #include <stdio.h>
@@ -34,7 +34,7 @@ struct Dot	 { int type;  Node *next;										};
 struct Character { int type;  Node *next;   char *value;								};
 struct String	 { int type;  Node *next;   char *value;								};
 struct Class	 { int type;  Node *next;   unsigned char *value;							};
-struct Action	 { int type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;				};
+struct Action	 { int type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
 struct Inline    { int type;  Node *next;   char *text;									};
 struct Predicate { int type;  Node *next;   char *text;									};
 struct Error	 { int type;  Node *next;   Node *element;  char *text;							};
@@ -90,7 +90,7 @@ extern Node *makeDot(void);
 extern Node *makeCharacter(char *text);
 extern Node *makeString(char *text);
 extern Node *makeClass(char *text);
-extern Node *makeAction(char *text);
+extern Node *makeAction(int lineNumber, char *text);
 extern Node *makeInline(char *text);
 extern Node *makePredicate(char *text);
 extern Node *makeError(Node *e, char *text);
@@ -108,7 +108,7 @@ extern Node *top(void);
 extern Node *pop(void);
 
 extern void  Rule_compile_c_header(void);
-extern void  Rule_compile_c(Node *node);
+extern void  Rule_compile_c(Node *node, int nolines);
 
 extern void  Node_print(Node *node);
 extern void  Rule_print(Node *node);

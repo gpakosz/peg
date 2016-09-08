@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2016-07-14 20:26:22 by piumarta on zora
+# Last edited: 2016-07-22 09:45:53 by piumarta on zora.local
 
 %{
 # include "tree.h"
@@ -39,9 +39,11 @@
   FILE *input= 0;
 
   int   verboseFlag= 0;
+  int   nolinesFlag= 0;
 
   static int	 lineNumber= 0;
   static int	 headerLine= 0;
+  static int	 actionLine= 0;
   static char	*fileName= 0;
   static int	 trailerLine= 0;
   static char	*trailer= 0;
@@ -106,7 +108,7 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 |		literal					{ push(makeString(yytext)); }
 |		class					{ push(makeClass(yytext)); }
 |		DOT					{ push(makeDot()); }
-|		action					{ push(makeAction(yytext)); }
+|		action					{ push(makeAction(actionLine, yytext)); }
 |		BEGIN					{ push(makePredicate("YY_BEGIN")); }
 |		END					{ push(makePredicate("YY_END")); }
 
@@ -128,7 +130,8 @@ char=		'\\' [-abefnrtv'"\[\]\\]
 |		'\\' [0-7][0-7]?
 |		!'\\' .
 
-action=		'{' < braces* > '}' -
+action=		'{'					{ actionLine= lineNumber }
+		< braces* > '}' -
 
 braces=		'{' braces* '}'
 |		!'}' ( end-of-line | . )
@@ -211,6 +214,7 @@ static void usage(char *name)
   fprintf(stderr, "where <option> can be\n");
   fprintf(stderr, "  -h          print this help information\n");
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
+  fprintf(stderr, "  -P          do not generate #line directives\n");
   fprintf(stderr, "  -v          be verbose\n");
   fprintf(stderr, "  -V          print version number and exit\n");
   fprintf(stderr, "if no <file> is given, input is read from stdin\n");
@@ -228,7 +232,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "Vho:v")))
+  while (-1 != (c= getopt(argc, argv, "PVho:v")))
     {
       switch (c)
 	{
@@ -246,6 +250,10 @@ int main(int argc, char **argv)
 	      perror(optarg);
 	      exit(1);
 	    }
+	  break;
+
+	case 'P':
+	  nolinesFlag= 1;
 	  break;
 
 	case 'v':
@@ -299,10 +307,13 @@ int main(int argc, char **argv)
     fprintf(output, "#line %i \"%s\"\n%s\n", headers->line, fileName, headers->text);
 
   if (rules)
-    Rule_compile_c(rules);
+    Rule_compile_c(rules, nolinesFlag);
 
-  if (trailer)
-    fprintf(output, "#line %i \"%s\"\n%s\n", trailerLine, fileName, trailer);
+  if (trailer) {
+    if (!nolinesFlag)
+      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName, trailer);
+    fprintf(output, "%s\n", trailer);
+  }
 
   return 0;
 }
