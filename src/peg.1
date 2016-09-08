@@ -13,7 +13,7 @@
 .\" 
 .\" THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 .\" 
-.\" Last edited: 2016-06-25 12:38:49 by piumarta on gentoo64.piumarta.com
+.\" Last edited: 2016-07-22 09:47:29 by piumarta on zora.local
 .\"
 .TH PEG 1 "September 2013" "Version 0.1"
 .SH NAME
@@ -82,7 +82,7 @@ and
 for example.)
 .SH OPTIONS
 .I peg
-and 
+and
 .I leg
 provide the following options:
 .TP
@@ -93,6 +93,9 @@ prints a summary of available options and then exits.
 writes the generated parser to the file
 .B output
 instead of the standard output.
+.TP
+.B \-P
+suppresses #line directives in the output.
 .TP
 .B \-v
 writes verbose information to standard error while working.

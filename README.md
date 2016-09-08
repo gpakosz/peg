@@ -26,6 +26,9 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.18** ([zip](../../archive/0.1.18.zip), [tar.gz](../../archive/0.1.18.tar.gz)) &mdash; 2016-07-22  
+Add `-P` option to disable `#line` directives.  
+Emit `#line` directives for all actions.  
 * **0.1.17** ([zip](../../archive/0.1.17.zip), [tar.gz](../../archive/0.1.17.tar.gz)) &mdash; 2016-07-14  
 Emit `#line` directives for header and trailer in the generated source file.
 * **0.1.16** ([zip](../../archive/0.1.16.zip), [tar.gz](../../archive/0.1.16.tar.gz)) &mdash; 2016-06-25  

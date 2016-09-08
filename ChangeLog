@@ -1,3 +1,11 @@
+2016-07-22  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
+
+	* src/version.h (PEG_LEVEL): Version 0.1.18.
+	* src/tree.h: Rule_compile_c takes nolines argument for option -P.
+	* src/compile.c, src/peg.c, src/leg.leg (main): Add option -P.
+	Generate #line directives for all actions.
+	* src/peg.1: Document option -P.
+
 2016-07-14  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
 
 	* src/version.h: 0.1.17

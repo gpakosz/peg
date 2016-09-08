@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2012-05-16 08:55:38 by piumarta on emilia
+ * Last edited: 2016-07-22 09:45:47 by piumarta on zora.local
  */
 
 #include "tree.h"
@@ -29,6 +29,7 @@
 FILE *input= 0;
 
 int   verboseFlag= 0;
+int   nolinesFlag= 0;
 
 static int   lineNumber= 0;
 static char *fileName= 0;
@@ -84,6 +85,7 @@ static void usage(char *name)
   fprintf(stderr, "where <option> can be\n");
   fprintf(stderr, "  -h          print this help information\n");
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
+  fprintf(stderr, "  -P          do not generate #line directives\n");
   fprintf(stderr, "  -v          be verbose\n");
   fprintf(stderr, "  -V          print version number and exit\n");
   fprintf(stderr, "if no <file> is given, input is read from stdin\n");
@@ -101,7 +103,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "Vho:v")))
+  while (-1 != (c= getopt(argc, argv, "PVho:v")))
     {
       switch (c)
 	{
@@ -119,6 +121,10 @@ int main(int argc, char **argv)
 	      perror(optarg);
 	      exit(1);
 	    }
+	  break;
+
+	case 'P':
+	  nolinesFlag= 1;
 	  break;
 
 	case 'v':
@@ -167,7 +173,7 @@ int main(int argc, char **argv)
       Rule_print(n);
 
   Rule_compile_c_header();
-  if (rules) Rule_compile_c(rules);
+  if (rules) Rule_compile_c(rules, nolinesFlag);
 
   return 0;
 }
