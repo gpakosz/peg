@@ -1,0 +1,1 @@
+Add -P option to disable #line directives. Emit #line directives for all actions.
