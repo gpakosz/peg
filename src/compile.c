@@ -407,15 +407,24 @@ static char *header= "\
 #include <string.h>\n\
 ";
 
-static char *preamble= "\
+static char *preamble = "\
 #ifndef YY_MALLOC\n\
 #define YY_MALLOC(C, N)		malloc(N)\n\
+#endif\n\
+#ifndef YY_VALUES_MALLOC\n\
+#define YY_VALUES_MALLOC(C, N)	YY_MALLOC(C, sizeof(YYSTYPE) * N)\n\
 #endif\n\
 #ifndef YY_REALLOC\n\
 #define YY_REALLOC(C, P, N)	realloc(P, N)\n\
 #endif\n\
+#ifndef YY_VALUES_REALLOC\n\
+#define YY_VALUES_REALLOC(C, P, N)	YY_REALLOC(C , P, sizeof(YYSTYPE) * N)\n\
+#endif\n\
 #ifndef YY_FREE\n\
 #define YY_FREE(C, P)		free(P)\n\
+#endif\n\
+#ifndef YY_VALUES_FREE\n\
+#define YY_VALUES_FREE(C, P)	YY_FREE(C, P)\n\
 #endif\n\
 #ifndef YY_LOCAL\n\
 #define YY_LOCAL(T)	static T\n\
@@ -665,7 +674,7 @@ YY_LOCAL(void) yyPush(yycontext *yy, char *text, int count)\n\
     {\n\
       long offset= yy->__val - yy->__vals;\n\
       yy->__valslen *= 2;\n\
-      yy->__vals= (YYSTYPE *)YY_REALLOC(yy, yy->__vals, sizeof(YYSTYPE) * yy->__valslen);\n\
+      yy->__vals= (YYSTYPE *)YY_VALUES_REALLOC(yy, yy->__vals, yy->__valslen);\n\
       yy->__val= yy->__vals + offset;\n\
     }\n\
 }\n\
@@ -696,7 +705,7 @@ YY_PARSE(int) YYPARSEFROM(YY_CTX_PARAM_ yyrule yystart)\n\
       yyctx->__thunkslen= YY_STACK_SIZE;\n\
       yyctx->__thunks= (yythunk *)YY_MALLOC(yyctx, sizeof(yythunk) * yyctx->__thunkslen);\n\
       yyctx->__valslen= YY_STACK_SIZE;\n\
-      yyctx->__vals= (YYSTYPE *)YY_MALLOC(yyctx, sizeof(YYSTYPE) * yyctx->__valslen);\n\
+      yyctx->__vals= (YYSTYPE *)YY_VALUES_MALLOC(yyctx, yyctx->__valslen);\n\
       yyctx->__begin= yyctx->__end= yyctx->__pos= yyctx->__limit= yyctx->__thunkpos= 0;\n\
     }\n\
   yyctx->__begin= yyctx->__end= yyctx->__pos;\n\
@@ -721,7 +730,7 @@ YY_PARSE(yycontext *) YYRELEASE(yycontext *yyctx)\n\
       YY_FREE(yyctx, yyctx->__buf);\n\
       YY_FREE(yyctx, yyctx->__text);\n\
       YY_FREE(yyctx, yyctx->__thunks);\n\
-      YY_FREE(yyctx, yyctx->__vals);\n\
+      YY_VALUES_FREE(yyctx, yyctx->__vals);\n\
     }\n\
   return yyctx;\n\
 }\n\
