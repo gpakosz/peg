@@ -22,10 +22,14 @@ Definition	<- Identifier 			{ if (push(beginRule(findRule(yytext)))->rule.expres
 		     LEFTARROW Expression	{ Node *e= pop();  Rule_setExpression(pop(), e); } &{ YYACCEPT }
 Expression	<- Sequence (SLASH Sequence	{ Node *f= pop();  push(Alternate_append(pop(), f)); }
 			    )*
-Sequence	<- Prefix (Prefix		{ Node *f= pop();  push(Sequence_append(pop(), f)); }	#ikp expanded from 'Seq <- Prefix*'
+Sequence	<- error (error		{ Node *f= pop();  push(Sequence_append(pop(), f)); }	#ikp expanded from 'Seq <- Prefix*'
 			  )*
 		 / 				{ push(makePredicate("1")); }				#ikp added
-Prefix		<- AND Action			{ push(makePredicate(yytext)); }	#ikp added
+error <-	Prefix  (TILDE Action			{ push(makeError(pop(), yytext)); }
+			)?
+
+Prefix		<- AT  Action				{ push(makeInline(yytext)); }
+		 / AND Action			{ push(makePredicate(yytext)); }	#ikp added
 		 / AND Suffix			{ push(makePeekFor(pop())); }		#ikp expanded from 'Prefix <- (AND/NOT)? Suffix'
 		 / NOT Suffix			{ push(makePeekNot(pop())); }
 		 /     Suffix
@@ -66,6 +70,8 @@ PLUS		<- '+' Spacing
 OPEN		<- '(' Spacing
 CLOSE		<- ')' Spacing
 DOT		<- '.' Spacing
+TILDE	<- '~' Spacing
+AT		<- '@' Spacing
 Spacing		<- (Space / Comment)*
 Comment		<- '#' (!EndOfLine .)* EndOfLine
 Space		<- ' ' / '\t' / EndOfLine
