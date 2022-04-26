@@ -39,8 +39,8 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			   )?
 Primary		<- Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
 		 / OPEN Expression CLOSE
-		 / Literal 'i' !IdentStart Spacing { push(makeStringCaseInsensitive(yytext)); }
 		 / Literal			{ push(makeString(yytext)); }
+                    ('i' !IdentStart Spacing)?  { top()->string.caseInsensitive=1; }
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
 		 / Action			{ push(makeAction(0, yytext)); }	#ikp added

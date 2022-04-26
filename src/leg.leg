@@ -105,8 +105,8 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 			COLON identifier !EQUAL		{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
 |		identifier !EQUAL			{ push(makeName(findRule(yytext))); }
 |		OPEN expression CLOSE
-|		literal 'i' ![-a-zA-Z_] -		{ push(makeStringCaseInsensitive(yytext)); }
 |		literal					{ push(makeString(yytext)); }
+                    ('i' ![-a-zA-Z_] -)?                { top()->string.caseInsensitive=1; }
 |		class					{ push(makeClass(yytext)); }
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }
