@@ -277,8 +277,8 @@ Node *makePlus(Node *e)
   return node;
 }
 
-
-static Node  *stack[1024];
+#define STACK_SIZE 1024
+static Node  *stack[STACK_SIZE];
 static Node **stackPointer= stack;
 
 
@@ -298,7 +298,7 @@ static void dumpStack(void)
 Node *push(Node *node)
 {
   assert(node);
-  assert(stackPointer < stack + 1023);
+  assert(stackPointer < stack + (STACK_SIZE-1));
 #ifdef DEBUG
   dumpStack();  fprintf(stderr, " PUSH ");  Node_print(node);  fprintf(stderr, "\n");
 #endif
