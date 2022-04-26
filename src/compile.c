@@ -163,21 +163,22 @@ static void Node_compile_c_ko(Node *node, int ko)
     case String:
       {
 	int len= strlen(node->string.value);
+        const char *ci = "CaseInsensitive";
 	if (1 == len)
 	  {
 	    if ('\'' == node->string.value[0])
-	      fprintf(output, "  if (!yymatchChar(yy, '\\'')) goto l%d;", ko);
+	      fprintf(output, "  if (!yymatchChar%s(yy, '\\'')) goto l%d;", node->string.caseInsensitive ? ci : "", ko);
 	    else
-	      fprintf(output, "  if (!yymatchChar(yy, '%s')) goto l%d;", node->string.value, ko);
+	      fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", node->string.caseInsensitive ? ci : "", node->string.value, ko);
 	  }
 	else
 	  if (2 == len && '\\' == node->string.value[0])
-	    fprintf(output, "  if (!yymatchChar(yy, '%s')) goto l%d;", node->string.value, ko);
+	    fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", node->string.caseInsensitive ? ci : "", node->string.value, ko);
 	  else
           {
-	    fprintf(output, "  if (!yymatchString(yy, \"");
+	    fprintf(output, "  if (!yymatchString%s(yy, \"", node->string.caseInsensitive ? ci : "");
             for(int i=0; i < len; ++i) {
-                if(node->string.value[i] == '"') fputc('\\', output);
+                if(node->string.value[i] == '"' && node->string.value[i-1] != '\\') fputc('\\', output);
                 fputc(node->string.value[i], output);
             }
 	    fprintf(output, "\")) goto l%d;", ko);
@@ -412,6 +413,7 @@ static char *header= "\
 #include <stdio.h>\n\
 #include <stdlib.h>\n\
 #include <string.h>\n\
+#include <ctype.h>\n\
 ";
 
 static char *preamble= "\
@@ -585,6 +587,19 @@ YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
   return 0;\n\
 }\n\
 \n\
+YY_LOCAL(int) yymatchCharCaseInsensitive(yycontext *yy, int c)\n\
+{\n\
+  if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;\n\
+  if (tolower(yy->__buf[yy->__pos]) == tolower(c))\n\
+    {\n\
+      ++yy->__pos;\n\
+      yyprintf((stderr, \"  ok   yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      return 1;\n\
+    }\n\
+  yyprintf((stderr, \"  fail yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  return 0;\n\
+}\n\
+\n\
 YY_LOCAL(int) yymatchString(yycontext *yy, const char *s)\n\
 {\n\
   int yysav= yy->__pos;\n\
@@ -592,6 +607,23 @@ YY_LOCAL(int) yymatchString(yycontext *yy, const char *s)\n\
     {\n\
       if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;\n\
       if (yy->__buf[yy->__pos] != *s)\n\
+        {\n\
+          yy->__pos= yysav;\n\
+          return 0;\n\
+        }\n\
+      ++s;\n\
+      ++yy->__pos;\n\
+    }\n\
+  return 1;\n\
+}\n\
+\n\
+YY_LOCAL(int) yymatchStringCaseInsensitive(yycontext *yy, const char *s)\n\
+{\n\
+  int yysav= yy->__pos;\n\
+  while (*s)\n\
+    {\n\
+      if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;\n\
+      if (tolower(yy->__buf[yy->__pos]) != tolower(*s))\n\
         {\n\
           yy->__pos= yysav;\n\
           return 0;\n\

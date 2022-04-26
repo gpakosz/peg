@@ -39,6 +39,7 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			   )?
 Primary		<- Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
 		 / OPEN Expression CLOSE
+		 / Literal 'i' !IdentStart Spacing { push(makeStringCaseInsensitive(yytext)); }
 		 / Literal			{ push(makeString(yytext)); }
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
@@ -70,7 +71,7 @@ PLUS		<- '+' Spacing
 OPEN		<- '(' Spacing
 CLOSE		<- ')' Spacing
 DOT		<- '.' Spacing
-TILDE	<- '~' Spacing
+TILDE		<- '~' Spacing
 AT		<- '@' Spacing
 Spacing		<- (Space / Comment)*
 Comment		<- '#' (!EndOfLine .)* EndOfLine

@@ -130,6 +130,15 @@ Node *makeString(char *text)
 {
   Node *node= newNode(String);
   node->string.value= strdup(text);
+  node->string.caseInsensitive= 0;
+  return node;
+}
+
+Node *makeStringCaseInsensitive(char *text)
+{
+  Node *node= newNode(String);
+  node->string.value= strdup(text);
+  node->string.caseInsensitive= 1;
   return node;
 }
 
