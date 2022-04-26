@@ -174,7 +174,14 @@ static void Node_compile_c_ko(Node *node, int ko)
 	  if (2 == len && '\\' == node->string.value[0])
 	    fprintf(output, "  if (!yymatchChar(yy, '%s')) goto l%d;", node->string.value, ko);
 	  else
-	    fprintf(output, "  if (!yymatchString(yy, \"%s\")) goto l%d;", node->string.value, ko);
+          {
+	    fprintf(output, "  if (!yymatchString(yy, \"");
+            for(int i=0; i < len; ++i) {
+                if(node->string.value[i] == '"') fputc('\\', output);
+                fputc(node->string.value[i], output);
+            }
+	    fprintf(output, "\")) goto l%d;", ko);
+          }
       }
       break;
 
@@ -383,7 +390,7 @@ static void Rule_compile_c2(Node *node)
 	fprintf(output, "  yyDo(yy, yyPush, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  yyprintf((stderr, \"%%s\\n\", \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
-      fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @ %%s\\n\", \"%s\", yy->__buf+yy->__pos));", node->rule.name);
+      fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  return 1;");
@@ -391,7 +398,7 @@ static void Rule_compile_c2(Node *node)
 	{
 	  label(ko);
 	  restore(0);
-	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @ %%s\\n\", \"%s\", yy->__buf+yy->__pos));", node->rule.name);
+	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
 	  fprintf(output, "\n  return 0;");
 	}
       fprintf(output, "\n}");
@@ -483,6 +490,9 @@ struct _yycontext {\n\
   YYSTYPE  *__val;\n\
   YYSTYPE  *__vals;\n\
   int       __valslen;\n\
+  int       __inputpos;\n\
+  int       __lineno;\n\
+  int       __linenopos;\n\
 #ifdef YY_CTX_MEMBERS\n\
   YY_CTX_MEMBERS\n\
 #endif\n\
@@ -497,7 +507,13 @@ struct _yycontext {\n\
 #define YY_INPUT(yy, buf, result, max_size)		\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
+    result= (EOF != yyc);                       	\\\n\
+    if(result) {                                	\\\n\
+      *(buf)= yyc;                              	\\\n\
+      if ('\\n' == yyc || '\\r' == yyc)     		\\\n\
+        {++yy->__lineno;yy->__linenopos=yy->__inputpos;}\\\n\
+      ++yy->__inputpos;	                		\\\n\
+    }                                           	\\\n\
     yyprintf((stderr, \"<%c>\", yyc));			\\\n\
   }\n\
 #endif\n\
@@ -512,7 +528,13 @@ yycontext *yyctx= &_yyctx;\n\
 #define YY_INPUT(buf, result, max_size)			\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
+    result= (EOF != yyc);                       	\\\n\
+    if(result) {                                	\\\n\
+      *(buf)= yyc;                              	\\\n\
+      if ('\\n' == yyc || '\\r' == yyc)     		\\\n\
+        {++yyctx->__lineno;yyctx->__linenopos=yyctx->__inputpos;}\\\n\
+      ++yyctx->__inputpos;	                		\\\n\
+    }                                           	\\\n\
     yyprintf((stderr, \"<%c>\", yyc));			\\\n\
   }\n\
 #endif\n\
@@ -523,8 +545,15 @@ YY_LOCAL(int) yyrefill(yycontext *yy)\n\
   int yyn;\n\
   while (yy->__buflen - yy->__pos < 512)\n\
     {\n\
+#ifdef YY_DEBUG\n\
+      int new_buflen = yy->__buflen * 2;\n\
+      yy->__buf= (char *)YY_REALLOC(yy, yy->__buf, new_buflen);\n\
+      memset(yy->__buf+yy->__buflen, 0, yy->__buflen);\n\
+      yy->__buflen = new_buflen;\n\
+#else\n\
       yy->__buflen *= 2;\n\
       yy->__buf= (char *)YY_REALLOC(yy, yy->__buf, yy->__buflen);\n\
+#endif\n\
     }\n\
 #ifdef YY_CTX_LOCAL\n\
   YY_INPUT(yy, (yy->__buf + yy->__pos), yyn, (yy->__buflen - yy->__pos));\n\
@@ -549,10 +578,10 @@ YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
   if ((unsigned char)yy->__buf[yy->__pos] == c)\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchChar(yy, %c) @ %s\\n\", c, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"  ok   yymatchChar(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchChar(yy, %c) @ %s\\n\", c, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"  fail yymatchChar(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -581,10 +610,10 @@ YY_LOCAL(int) yymatchClass(yycontext *yy, unsigned char *bits)\n\
   if (bits[c >> 3] & (1 << (c & 7)))\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchClass @ %s\\n\", yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"  ok   yymatchClass @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchClass @ %s\\n\", yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"  fail yymatchClass @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -691,6 +720,9 @@ YY_PARSE(int) YYPARSEFROM(YY_CTX_PARAM_ yyrule yystart)\n\
     {\n\
       yyctx->__buflen= YY_BUFFER_SIZE;\n\
       yyctx->__buf= (char *)YY_MALLOC(yyctx, yyctx->__buflen);\n\
+#ifdef YY_DEBUG\n\
+      memset(yyctx->__buf, 0, yyctx->__buflen);\n\
+#endif\n\
       yyctx->__textlen= YY_BUFFER_SIZE;\n\
       yyctx->__text= (char *)YY_MALLOC(yyctx, yyctx->__textlen);\n\
       yyctx->__thunkslen= YY_STACK_SIZE;\n\

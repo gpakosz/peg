@@ -1,17 +1,17 @@
 # PE Grammar for PE Grammars
-# 
+#
 # Adapted from [1] by Ian Piumarta <first-name at last-name point com>.
-# 
+#
 # Local modifications (marked '#ikp') to support:
 #     C text in '{ ... }' copied verbatim to output as 'semantic action'
 #     input consumed between '<' and '>' is 'char yytext[]' in semantic actions
-# 
+#
 # Best viewed using 140 columns monospaced with tabs every 8.
-# 
+#
 # [1] Bryan Ford.  "Parsing Expression Grammars: A Recognition-Based Syntactic
 #     Foundation."  Symposium on Principles of Programming Languages,
 #     January 14--16, 2004, Venice, Italy.
-# 
+#
 # Last edited: 2016-07-15 10:27:27 by piumarta on zora
 
 # Hierarchical syntax
@@ -72,6 +72,12 @@ Space		<- ' ' / '\t' / EndOfLine
 EndOfLine	<- '\r\n' / '\n' / '\r'
 EndOfFile	<- !.
 
-Action		<- '{' < [^}]* > '}' Spacing		#ikp added
+Action		<- '{' < Braces* > '}' Spacing		#ikp added
+Braces      <-	'{' Braces* '}'
+	/ LiteralBraces
+	/ !'}' (EndOfLine / . )
+LiteralBraces	<- ['] (!['] Char )* [']
+		 / ["] (!["] Char )* ["]
+
 BEGIN		<- '<' Spacing				#ikp added
 END		<- '>' Spacing				#ikp added

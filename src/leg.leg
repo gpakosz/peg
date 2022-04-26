@@ -1,8 +1,8 @@
 # LE Grammar for LE Grammars
-# 
+#
 # Copyright (c) 2007 by Ian Piumarta
 # All rights reserved.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the 'Software'),
 # to deal in the Software without restriction, including without limitation
@@ -12,9 +12,9 @@
 # permission notice appear in all copies of the Software.  Acknowledgement
 # of the use of this Software in supporting documentation would be
 # appreciated but is not required.
-# 
+#
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
-# 
+#
 # Last edited: 2016-07-22 09:45:53 by piumarta on zora.local
 
 %{
@@ -134,7 +134,11 @@ action=		'{'					{ actionLine= lineNumber }
 		< braces* > '}' -
 
 braces=		'{' braces* '}'
+| literalBraces
 |		!'}' ( end-of-line | . )
+
+literalBraces=	['] ( !['] char )* [']
+|		["] ( !["] char )* ["]
 
 EQUAL=		'=' -
 COLON=		':' -
@@ -311,7 +315,7 @@ int main(int argc, char **argv)
 
   if (trailer) {
     if (!nolinesFlag)
-      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName, trailer);
+      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName);
     fprintf(output, "%s\n", trailer);
   }
 
