@@ -1,6 +1,6 @@
 /* Copyright (c) 2007 by Ian Piumarta
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the 'Software'),
  * to deal in the Software without restriction, including without limitation
@@ -10,9 +10,9 @@
  * permission notice appear in all copies of the Software.  Acknowledgement
  * of the use of this Software in supporting documentation would be
  * appreciated but is not required.
- * 
+ *
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
- * 
+ *
  * Last edited: 2016-07-15 10:25:14 by piumarta on zora
  */
 
@@ -143,7 +143,7 @@ void setTopStrCharCaseInsensitive()
       case Character: node->character.caseInsensitive= 1; break;
       default:
       fprintf(stderr, "\ncan not set CaseInsensitive on node type %d\n", node->type);
-      exit(1);          
+      exit(1);
   }
 }
 
@@ -348,7 +348,11 @@ static void Node_fprint(FILE *stream, Node *node, int asLeg, int naked)
     case Class:		fprintf(stream, " [%s]", node->cclass.value);				break;
     case Action:	if(!naked) fprintf(stream, " { %s }", node->action.text);		break;
     case Predicate:	if(!naked) fprintf(stream, " ?{ %s }", node->predicate.text);		break;
-    case Error: 	if(!naked) fprintf(stream, " ~{ %s }", node->error.text);		break;
+    case Error: 	if(node->error.element)
+                          Node_fprint(stream, node->error.element, asLeg, naked);
+                        if(!naked)
+                          fprintf(stream, " ~{ %s }", node->error.text);
+                        break;
     case Inline: 	if(!naked) fprintf(stream, " @{ %s }", node->inLine.text);		break;
 
     case Alternate:	node= node->alternate.first;
@@ -371,7 +375,7 @@ static void Node_fprint(FILE *stream, Node *node, int asLeg, int naked)
 			break;
 
     case PeekFor:	fprintf(stream, "&");  Node_fprint(stream, node->query.element, asLeg, naked);	break;
-    case PeekNot:	fprintf(stream, "!");  Node_fprint(stream, node->query.element, asLeg, naked);	break;
+    case PeekNot:	fprintf(stream, " !");  Node_fprint(stream, node->query.element, asLeg, naked);	break;
     case Query:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "?");	break;
     case Star:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "*");	break;
     case Plus:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "+");	break;
@@ -409,7 +413,7 @@ static void EBNF_fprint(FILE *stream, Node *node)
   fprintf(stream, "\n");
 }
 
-void EBNF_print() { 
+void EBNF_print() {
     int i;
     Node *n;
     Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
@@ -433,24 +437,24 @@ static void RuleLegPeg_fprint(FILE *stream, Node *node, int asLeg, int naked)
   else fprintf(stream, "\n");
 }
 
-void LEG_print() { 
+void LEG_print(int naked) {
     int i;
     Node *n;
     Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
     for (i=0, n= rules;  n;  n= n->any.next, ++i)
       oderedRules[i] = n;
     for(i=ruleCount-1; i >= 0; --i)
-        RuleLegPeg_fprint(stderr, oderedRules[i], 1, 0);
+        RuleLegPeg_fprint(stderr, oderedRules[i], 1, naked);
     free(oderedRules);
 }
 
-void PEG_print() { 
+void PEG_print(int naked) {
     int i;
     Node *n;
     Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
     for (i=0, n= rules;  n;  n= n->any.next, ++i)
       oderedRules[i] = n;
     for(i=ruleCount-1; i >= 0; --i)
-        RuleLegPeg_fprint(stderr, oderedRules[i], 0, 0);
+        RuleLegPeg_fprint(stderr, oderedRules[i], 0, naked);
     free(oderedRules);
 }

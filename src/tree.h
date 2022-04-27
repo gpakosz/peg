@@ -1,6 +1,6 @@
 /* Copyright (c) 2007 by Ian Piumarta
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the 'Software'),
  * to deal in the Software without restriction, including without limitation
@@ -10,15 +10,15 @@
  * permission notice appear in all copies of the Software.  Acknowledgement
  * of the use of this Software in supporting documentation would be
  * appreciated but is not required.
- * 
+ *
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
- * 
+ *
  * Last edited: 2016-07-22 09:42:48 by piumarta on zora.local
  */
 
 #include <stdio.h>
 
-enum { Unknown= 0, Rule, Variable, Name, Dot, Character, String, Class, Action, Inline, Predicate, Error, Alternate, Sequence, PeekFor, PeekNot, Query, Star, Plus };
+typedef enum { Unknown= 0, Rule, Variable, Name, Dot, Character, String, Class, Action, Inline, Predicate, Error, Alternate, Sequence, PeekFor, PeekNot, Query, Star, Plus } NodeType;
 
 enum {
   RuleUsed	= 1<<0,
@@ -27,29 +27,29 @@ enum {
 
 typedef union Node Node;
 
-struct Rule	 { int type;  Node *next;   char *name;	 Node *variables;  Node *expression;  int id;  int flags;	};
-struct Variable	 { int type;  Node *next;   char *name;  Node *value;  int offset;					};
-struct Name	 { int type;  Node *next;   Node *rule;  Node *variable;						};
-struct Dot	 { int type;  Node *next;										};
-struct Character { int type;  Node *next;   char *value; int caseInsensitive;						};
-struct String	 { int type;  Node *next;   char *value; int caseInsensitive;						};
-struct Class	 { int type;  Node *next;   unsigned char *value;							};
-struct Action	 { int type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
-struct Inline    { int type;  Node *next;   char *text;									};
-struct Predicate { int type;  Node *next;   char *text;									};
-struct Error	 { int type;  Node *next;   Node *element;  char *text;							};
-struct Alternate { int type;  Node *next;   Node *first;  Node *last;							};
-struct Sequence	 { int type;  Node *next;   Node *first;  Node *last;							};
-struct PeekFor	 { int type;  Node *next;   Node *element;								};
-struct PeekNot	 { int type;  Node *next;   Node *element;								};
-struct Query	 { int type;  Node *next;   Node *element;								};
-struct Star	 { int type;  Node *next;   Node *element;								};
-struct Plus	 { int type;  Node *next;   Node *element;								};
-struct Any	 { int type;  Node *next;										};
+struct Rule	 { NodeType type;  Node *next;   char *name;	 Node *variables;  Node *expression;  int id;  int flags;	};
+struct Variable	 { NodeType type;  Node *next;   char *name;  Node *value;  int offset;					};
+struct Name	 { NodeType type;  Node *next;   Node *rule;  Node *variable;						};
+struct Dot	 { NodeType type;  Node *next;										};
+struct Character { NodeType type;  Node *next;   char *value; int caseInsensitive;						};
+struct String	 { NodeType type;  Node *next;   char *value; int caseInsensitive;						};
+struct Class	 { NodeType type;  Node *next;   unsigned char *value;							};
+struct Action	 { NodeType type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
+struct Inline    { NodeType type;  Node *next;   char *text;									};
+struct Predicate { NodeType type;  Node *next;   char *text;									};
+struct Error	 { NodeType type;  Node *next;   Node *element;  char *text;							};
+struct Alternate { NodeType type;  Node *next;   Node *first;  Node *last;							};
+struct Sequence	 { NodeType type;  Node *next;   Node *first;  Node *last;							};
+struct PeekFor	 { NodeType type;  Node *next;   Node *element;								};
+struct PeekNot	 { NodeType type;  Node *next;   Node *element;								};
+struct Query	 { NodeType type;  Node *next;   Node *element;								};
+struct Star	 { NodeType type;  Node *next;   Node *element;								};
+struct Plus	 { NodeType type;  Node *next;   Node *element;								};
+struct Any	 { NodeType type;  Node *next;										};
 
 union Node
 {
-  int			type;
+  NodeType		type;
   struct Rule		rule;
   struct Variable	variable;
   struct Name		name;
@@ -115,5 +115,5 @@ extern void  Rule_compile_c(Node *node, int nolines);
 extern void  Node_print(Node *node);
 extern void  Rule_print(Node *node);
 extern void  EBNF_print();
-extern void  LEG_print();
-extern void  PEG_print();
+extern void  LEG_print(int naked);
+extern void  PEG_print(int naked);
