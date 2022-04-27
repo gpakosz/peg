@@ -37,7 +37,11 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			     / STAR		{ push(makeStar (pop())); }
 			     / PLUS		{ push(makePlus (pop())); }
 			   )?
-Primary		<- AT? Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
+Primary		<- AT? (
+                    Identifier			{ push(makeVariable(yytext)); }
+			COLON Identifier !LEFTARROW	{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
+                    / Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
+                    )
 		 / OPEN Expression CLOSE ~{yyerror("missing expected `)`");}
 		 / AT? Literal			{ push(makeString(yytext)); }
                     ('i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
@@ -73,6 +77,7 @@ OPEN		<- '(' Spacing
 CLOSE		<- ')' Spacing
 DOT		<- '.' Spacing
 TILDE		<- '~' Spacing
+COLON		<- ':' Spacing
 AT		<- '@' Spacing
 Spacing		<- (Space / Comment)*
 Comment		<- '#' (!EndOfLine .)* EndOfLine
