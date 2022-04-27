@@ -347,7 +347,15 @@ static void Node_fprint(FILE *stream, Node *node, int asLeg, int naked)
     case String:	fprintf(stream, " \"%s\"", node->string.value);				break;
     case Class:		fprintf(stream, " [%s]", node->cclass.value);				break;
     case Action:	if(!naked) fprintf(stream, " { %s }", node->action.text);		break;
-    case Predicate:	if(!naked) fprintf(stream, " ?{ %s }", node->predicate.text);		break;
+    case Predicate:	if(!naked) {
+                            if(strcmp(node->predicate.text, "YY_BEGIN") == 0)
+                                fprintf(stream, " <");
+                            else if(strcmp(node->predicate.text, "YY_END") == 0)
+                                fprintf(stream, " >");
+                            else
+                                fprintf(stream, " ?{ %s }", node->predicate.text);
+                        }
+                        break;
     case Error: 	if(node->error.element)
                           Node_fprint(stream, node->error.element, asLeg, naked);
                         if(!naked)
