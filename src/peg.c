@@ -29,9 +29,13 @@
 FILE *input= 0;
 
 int   verboseFlag= 0;
+int   ebnfFlag= 0;
+int   legFlag= 0;
 int   nolinesFlag= 0;
 
 static int   lineNumber= 0;
+static int   inputPos= 0;
+static int   lineNumberPos= 0;
 static char *fileName= 0;
 
 void yyerror(char *message);
@@ -39,7 +43,11 @@ void yyerror(char *message);
 #define YY_INPUT(buf, result, max)			\
 {							\
   int c= getc(input);					\
-  if ('\n' == c || '\r' == c) ++lineNumber;		\
+  if ('\n' == c || '\r' == c) {                         \
+    ++lineNumber;                                       \
+    lineNumberPos=inputPos;                             \
+  }		                                        \
+  ++inputPos;                                           \
   result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
 }
 
@@ -50,7 +58,7 @@ void yyerror(char *message);
 
 void yyerror(char *message)
 {
-  fprintf(stderr, "%s:%d: %s", fileName, lineNumber, message);
+  fprintf(stderr, "%s:%d:%d %s", fileName, lineNumber, (inputPos-lineNumberPos), message);
   if (yyctx->__text[0]) fprintf(stderr, " near token '%s'", yyctx->__text);
   if (yyctx->__pos < yyctx->__limit || !feof(input))
     {
@@ -86,6 +94,8 @@ static void usage(char *name)
   fprintf(stderr, "  -h          print this help information\n");
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
   fprintf(stderr, "  -P          do not generate #line directives\n");
+  fprintf(stderr, "  -l          output leg format\n");
+  fprintf(stderr, "  -e          output EBNF\n");
   fprintf(stderr, "  -v          be verbose\n");
   fprintf(stderr, "  -V          print version number and exit\n");
   fprintf(stderr, "if no <file> is given, input is read from stdin\n");
@@ -103,7 +113,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "PVho:v")))
+  while (-1 != (c= getopt(argc, argv, "PVho:vel")))
     {
       switch (c)
 	{
@@ -129,6 +139,14 @@ int main(int argc, char **argv)
 
 	case 'v':
 	  verboseFlag= 1;
+	  break;
+
+	case 'e':
+	  ebnfFlag= 1;
+	  break;
+
+	case 'l':
+	  legFlag= 1;
 	  break;
 
 	default:
@@ -171,6 +189,12 @@ int main(int argc, char **argv)
   if (verboseFlag)
     for (n= rules;  n;  n= n->any.next)
       Rule_print(n);
+
+  if (ebnfFlag)
+    EBNF_print();
+
+  if (legFlag)
+    LEG_print();
 
   Rule_compile_c_header();
   if (rules) Rule_compile_c(rules, nolinesFlag);

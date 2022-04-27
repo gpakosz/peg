@@ -163,20 +163,20 @@ static void Node_compile_c_ko(Node *node, int ko)
     case String:
       {
 	int len= strlen(node->string.value);
-        const char *ci = "CaseInsensitive";
+        const char *caseType = node->string.caseInsensitive ? "CaseInsensitive" : "";
 	if (1 == len)
 	  {
 	    if ('\'' == node->string.value[0])
-	      fprintf(output, "  if (!yymatchChar%s(yy, '\\'')) goto l%d;", node->string.caseInsensitive ? ci : "", ko);
+	      fprintf(output, "  if (!yymatchChar%s(yy, '\\'')) goto l%d;", caseType, ko);
 	    else
-	      fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", node->string.caseInsensitive ? ci : "", node->string.value, ko);
+	      fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", caseType, node->string.value, ko);
 	  }
 	else
 	  if (2 == len && '\\' == node->string.value[0])
-	    fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", node->string.caseInsensitive ? ci : "", node->string.value, ko);
+	    fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", caseType, node->string.value, ko);
 	  else
           {
-	    fprintf(output, "  if (!yymatchString%s(yy, \"", node->string.caseInsensitive ? ci : "");
+	    fprintf(output, "  if (!yymatchString%s(yy, \"", caseType);
             for(int i=0; i < len; ++i) {
                 if(node->string.value[i] == '"' && node->string.value[i-1] != '\\') fputc('\\', output);
                 fputc(node->string.value[i], output);

@@ -123,6 +123,7 @@ Node *makeCharacter(char *text)
 {
   Node *node= newNode(Character);
   node->character.value= strdup(text);
+  node->string.caseInsensitive= 0;
   return node;
 }
 
@@ -132,6 +133,18 @@ Node *makeString(char *text)
   node->string.value= strdup(text);
   node->string.caseInsensitive= 0;
   return node;
+}
+
+void setTopStrCharCaseInsensitive()
+{
+  Node *node= top();
+  switch(node->type) {
+      case String: node->string.caseInsensitive= 1; break;
+      case Character: node->character.caseInsensitive= 1; break;
+      default:
+      fprintf(stderr, "\ncan not set CaseInsensitive on node type %d\n", node->type);
+      exit(1);          
+  }
 }
 
 Node *makeStringCaseInsensitive(char *text)
@@ -321,7 +334,7 @@ Node *pop(void)
 }
 
 
-static void Node_fprint(FILE *stream, Node *node)
+static void Node_fprint(FILE *stream, Node *node, int asLeg, int naked)
 {
   assert(node);
   switch (node->type)
@@ -333,40 +346,42 @@ static void Node_fprint(FILE *stream, Node *node)
     case Character:	fprintf(stream, " '%s'", node->character.value);			break;
     case String:	fprintf(stream, " \"%s\"", node->string.value);				break;
     case Class:		fprintf(stream, " [%s]", node->cclass.value);				break;
-    case Action:	fprintf(stream, " { %s }", node->action.text);				break;
-    case Predicate:	fprintf(stream, " ?{ %s }", node->action.text);				break;
+    case Action:	if(!naked) fprintf(stream, " { %s }", node->action.text);		break;
+    case Predicate:	if(!naked) fprintf(stream, " ?{ %s }", node->predicate.text);		break;
+    case Error: 	if(!naked) fprintf(stream, " ~{ %s }", node->error.text);		break;
+    case Inline: 	if(!naked) fprintf(stream, " @{ %s }", node->inLine.text);		break;
 
     case Alternate:	node= node->alternate.first;
 			fprintf(stream, " (");
-			Node_fprint(stream, node);
+			Node_fprint(stream, node, asLeg, naked);
 			while ((node= node->any.next))
 			  {
-			    fprintf(stream, " |");
-			    Node_fprint(stream, node);
+			    fprintf(stream, asLeg ? " |" : " /");
+			    Node_fprint(stream, node, asLeg, naked);
 			  }
 			fprintf(stream, " )");
 			break;
 
     case Sequence:	node= node->sequence.first;
 			fprintf(stream, " (");
-			Node_fprint(stream, node);
+			Node_fprint(stream, node, asLeg, naked);
 			while ((node= node->any.next))
-			  Node_fprint(stream, node);
+			  Node_fprint(stream, node, asLeg, naked);
 			fprintf(stream, " )");
 			break;
 
-    case PeekFor:	fprintf(stream, "&");  Node_fprint(stream, node->query.element);	break;
-    case PeekNot:	fprintf(stream, "!");  Node_fprint(stream, node->query.element);	break;
-    case Query:		Node_fprint(stream, node->query.element);  fprintf(stream, "?");	break;
-    case Star:		Node_fprint(stream, node->query.element);  fprintf(stream, "*");	break;
-    case Plus:		Node_fprint(stream, node->query.element);  fprintf(stream, "+");	break;
+    case PeekFor:	fprintf(stream, "&");  Node_fprint(stream, node->query.element, asLeg, naked);	break;
+    case PeekNot:	fprintf(stream, "!");  Node_fprint(stream, node->query.element, asLeg, naked);	break;
+    case Query:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "?");	break;
+    case Star:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "*");	break;
+    case Plus:		Node_fprint(stream, node->query.element, asLeg, naked);  fprintf(stream, "+");	break;
     default:
       fprintf(stream, "\nunknown node type %d\n", node->type);
       exit(1);
     }
 }
 
-void Node_print(Node *node)	{ Node_fprint(stderr, node); }
+void Node_print(Node *node)	{ Node_fprint(stderr, node, 1, 0); }
 
 static void Rule_fprint(FILE *stream, Node *node)
 {
@@ -374,10 +389,68 @@ static void Rule_fprint(FILE *stream, Node *node)
   assert(Rule == node->type);
   fprintf(stream, "%s.%d =", node->rule.name, node->rule.id);
   if (node->rule.expression)
-    Node_fprint(stream, node->rule.expression);
+    Node_fprint(stream, node->rule.expression, 1, 0);
   else
     fprintf(stream, " UNDEFINED");
   fprintf(stream, " ;\n");
 }
 
 void Rule_print(Node *node)	{ Rule_fprint(stderr, node); }
+
+static void EBNF_fprint(FILE *stream, Node *node)
+{
+  assert(node);
+  assert(Rule == node->type);
+  fprintf(stream, "%s ::=", node->rule.name);
+  if (node->rule.expression)
+    Node_fprint(stream, node->rule.expression, 1, 1);
+  else
+    fprintf(stream, " UNDEFINED");
+  fprintf(stream, "\n");
+}
+
+void EBNF_print() { 
+    int i;
+    Node *n;
+    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    for (i=0, n= rules;  n;  n= n->any.next, ++i)
+      oderedRules[i] = n;
+    for(i=ruleCount-1; i >= 0; --i)
+        EBNF_fprint(stderr, oderedRules[i]);
+    free(oderedRules);
+}
+
+static void RuleLegPeg_fprint(FILE *stream, Node *node, int asLeg, int naked)
+{
+  assert(node);
+  assert(Rule == node->type);
+  fprintf(stream, "%s %s", node->rule.name, asLeg ? "=" : "<-");
+  if (node->rule.expression)
+    Node_fprint(stream, node->rule.expression, asLeg, naked);
+  else
+    fprintf(stream, " UNDEFINED");
+  if(asLeg) fprintf(stream, " ;\n");
+  else fprintf(stream, "\n");
+}
+
+void LEG_print() { 
+    int i;
+    Node *n;
+    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    for (i=0, n= rules;  n;  n= n->any.next, ++i)
+      oderedRules[i] = n;
+    for(i=ruleCount-1; i >= 0; --i)
+        RuleLegPeg_fprint(stderr, oderedRules[i], 1, 0);
+    free(oderedRules);
+}
+
+void PEG_print() { 
+    int i;
+    Node *n;
+    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    for (i=0, n= rules;  n;  n= n->any.next, ++i)
+      oderedRules[i] = n;
+    for(i=ruleCount-1; i >= 0; --i)
+        RuleLegPeg_fprint(stderr, oderedRules[i], 0, 0);
+    free(oderedRules);
+}

@@ -28,7 +28,7 @@ Sequence	<- error (error		{ Node *f= pop();  push(Sequence_append(pop(), f)); }	
 error <-	Prefix  (TILDE Action			{ push(makeError(pop(), yytext)); }
 			)?
 
-Prefix		<- AT  Action				{ push(makeInline(yytext)); }
+Prefix		<- AT  Action			{ push(makeInline(yytext)); }
 		 / AND Action			{ push(makePredicate(yytext)); }	#ikp added
 		 / AND Suffix			{ push(makePeekFor(pop())); }		#ikp expanded from 'Prefix <- (AND/NOT)? Suffix'
 		 / NOT Suffix			{ push(makePeekNot(pop())); }
@@ -37,10 +37,10 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			     / STAR		{ push(makeStar (pop())); }
 			     / PLUS		{ push(makePlus (pop())); }
 			   )?
-Primary		<- Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
+Primary		<- AT? Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
 		 / OPEN Expression CLOSE
-		 / Literal			{ push(makeString(yytext)); }
-                    ('i' !IdentStart Spacing)?  { top()->string.caseInsensitive=1; }
+		 / AT? Literal			{ push(makeString(yytext)); }
+                    ('i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
 		 / Action			{ push(makeAction(0, yytext)); }	#ikp added
@@ -54,6 +54,7 @@ IdentStart	<- [a-zA-Z_]
 IdentCont	<- IdentStart / [0-9]
 Literal		<- ['] < (!['] Char )* > ['] Spacing		#ikp inserted < ... >
 		 / ["] < (!["] Char )* > ["] Spacing		#ikp inserted < ... >
+		 / [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
 Range		<- Char '-' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
@@ -61,7 +62,7 @@ Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
 		 / '\\' [0-7][0-7]?
 		 / '\\' '-'					#ikp added
 		 / !'\\' .
-LEFTARROW	<- '<-' Spacing
+LEFTARROW	<- ('<--' / '<-|' / '<-' / '<==') Spacing
 SLASH		<- '/' Spacing
 AND		<- '&' Spacing
 NOT		<- '!' Spacing
