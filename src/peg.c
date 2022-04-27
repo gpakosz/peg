@@ -30,6 +30,7 @@ FILE *input= 0;
 
 int   verboseFlag= 0;
 int   ebnfFlag= 0;
+int   nakedFlag= 0;
 int   legFlag= 0;
 int   nolinesFlag= 0;
 
@@ -94,6 +95,7 @@ static void usage(char *name)
   fprintf(stderr, "  -h          print this help information\n");
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
   fprintf(stderr, "  -P          do not generate #line directives\n");
+  fprintf(stderr, "  -n          output naked\n");
   fprintf(stderr, "  -l          output leg format\n");
   fprintf(stderr, "  -e          output EBNF\n");
   fprintf(stderr, "  -v          be verbose\n");
@@ -113,7 +115,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "PVho:vel")))
+  while (-1 != (c= getopt(argc, argv, "PVho:veln")))
     {
       switch (c)
 	{
@@ -147,6 +149,10 @@ int main(int argc, char **argv)
 
 	case 'l':
 	  legFlag= 1;
+	  break;
+
+	case 'n':
+	  nakedFlag= 1;
 	  break;
 
 	default:
@@ -194,7 +200,10 @@ int main(int argc, char **argv)
     EBNF_print();
 
   if (legFlag)
-    LEG_print();
+    LEG_print(nakedFlag);
+
+  if (nakedFlag)
+    PEG_print(nakedFlag);
 
   Rule_compile_c_header();
   if (rules) Rule_compile_c(rules, nolinesFlag);

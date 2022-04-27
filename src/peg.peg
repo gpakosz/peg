@@ -38,7 +38,7 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			     / PLUS		{ push(makePlus (pop())); }
 			   )?
 Primary		<- AT? Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
-		 / OPEN Expression CLOSE
+		 / OPEN Expression CLOSE ~{yyerror("missing expected `)`");}
 		 / AT? Literal			{ push(makeString(yytext)); }
                     ('i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
 		 / Class			{ push(makeClass(yytext)); }

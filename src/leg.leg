@@ -41,6 +41,7 @@
   int   verboseFlag= 0;
   int   ebnfFlag= 0;
   int   pegFlag= 0;
+  int   nakedFlag= 0;
   int   nolinesFlag= 0;
 
   static int	 lineNumber= 0;
@@ -112,7 +113,7 @@ suffix=		primary (QUESTION			{ push(makeQuery(pop())); }
 primary=	identifier				{ push(makeVariable(yytext)); }
 			COLON identifier !EQUAL		{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
 |		identifier !EQUAL			{ push(makeName(findRule(yytext))); }
-|		OPEN expression CLOSE
+|		OPEN expression CLOSE ~{yyerror("missing expected `)`");}
 |		literal					{ push(makeString(yytext)); }
                     ('i' ![-a-zA-Z_] -                { setTopStrCharCaseInsensitive(); })?
 |		class					{ push(makeClass(yytext)); }
@@ -230,6 +231,7 @@ static void usage(char *name)
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
   fprintf(stderr, "  -P          do not generate #line directives\n");
   fprintf(stderr, "  -p          output peg format\n");
+  fprintf(stderr, "  -n          output naked\n");
   fprintf(stderr, "  -e          output EBNF\n");
   fprintf(stderr, "  -v          be verbose\n");
   fprintf(stderr, "  -V          print version number and exit\n");
@@ -248,7 +250,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "PVho:vep")))
+  while (-1 != (c= getopt(argc, argv, "PVho:vepn")))
     {
       switch (c)
 	{
@@ -282,6 +284,10 @@ int main(int argc, char **argv)
 
 	case 'p':
 	  pegFlag= 1;
+	  break;
+
+	case 'n':
+	  nakedFlag= 1;
 	  break;
 
 	default:
@@ -329,7 +335,10 @@ int main(int argc, char **argv)
     EBNF_print();
 
   if (pegFlag)
-    PEG_print();
+    PEG_print(nakedFlag);
+
+  if (nakedFlag)
+    LEG_print(nakedFlag);
 
   Rule_compile_c_header();
 
