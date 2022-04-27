@@ -341,7 +341,10 @@ static void Node_fprint(FILE *stream, Node *node, int asLeg, int naked)
     {
     case Rule:		fprintf(stream, " %s", node->rule.name);				break;
     case Variable:	fprintf(stream, " %s:", node->variable.name);				break;
-    case Name:		fprintf(stream, " %s", node->name.rule->rule.name);			break;
+    case Name:		if(node->name.variable && !naked)
+                            Node_fprint(stream, node->name.variable, asLeg, naked);
+                        fprintf(stream, " %s", node->name.rule->rule.name);
+                        break;
     case Dot:		fprintf(stream, " .");							break;
     case Character:	fprintf(stream, " '%s'", node->character.value);			break;
     case String:	fprintf(stream, " \"%s\"", node->string.value);				break;
