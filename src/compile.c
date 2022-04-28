@@ -505,6 +505,9 @@ struct _yycontext {\n\
 #define YY_CTX_PARAM	yycontext *yyctx\n\
 #define YY_CTX_ARG_	yyctx,\n\
 #define YY_CTX_ARG	yyctx\n\
+#ifndef YY_ENDLINE_CHAR\n\
+#define YY_ENDLINE_CHAR	'\\n'\n\
+#endif\n\
 #ifndef YY_INPUT\n\
 #define YY_INPUT(yy, buf, result, max_size)		\\\n\
   {							\\\n\
@@ -512,7 +515,7 @@ struct _yycontext {\n\
     result= (EOF != yyc);                       	\\\n\
     if(result) {                                	\\\n\
       *(buf)= yyc;                              	\\\n\
-      if ('\\n' == yyc || '\\r' == yyc)     		\\\n\
+      if (YY_ENDLINE_CHAR == yyc)       		\\\n\
         {++yy->__lineno;yy->__linenopos=yy->__inputpos;}\\\n\
       ++yy->__inputpos;	                		\\\n\
     }                                           	\\\n\
@@ -533,7 +536,7 @@ yycontext *yyctx= &_yyctx;\n\
     result= (EOF != yyc);                       	\\\n\
     if(result) {                                	\\\n\
       *(buf)= yyc;                              	\\\n\
-      if ('\\n' == yyc || '\\r' == yyc)     		\\\n\
+      if (YY_ENDLINE_CHAR == yyc)       		\\\n\
         {++yyctx->__lineno;yyctx->__linenopos=yyctx->__inputpos;}\\\n\
       ++yyctx->__inputpos;	                		\\\n\
     }                                           	\\\n\

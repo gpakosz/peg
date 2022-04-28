@@ -41,10 +41,12 @@ static char *fileName= 0;
 
 void yyerror(char *message);
 
+#define MYLINE_CHAR '\n'
+
 #define YY_INPUT(buf, result, max)			\
 {							\
   int c= getc(input);					\
-  if ('\n' == c || '\r' == c) {                         \
+  if (MYLINE_CHAR == c) {                               \
     ++lineNumber;                                       \
     lineNumberPos=inputPos;                             \
   }		                                        \
