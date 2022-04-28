@@ -1,0 +1,222 @@
+# ../leg -o peg2naked.leg.c peg2naked.leg; gcc -g -o peg2naked peg2naked.leg.c; ./peg2naked ../src/peg.peg
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct _yycontext yycontext;
+void printName(yycontext *ctx, const char *s);
+void printDefined(yycontext *ctx, const char *s);
+void printElmNSP(yycontext *ctx, const char *s);
+void printElm(yycontext *ctx, const char *s);
+void printAltSym(yycontext *ctx);
+int igetchar(yycontext *ctx);
+
+#define getchar() igetchar(yy)
+//#define YY_DEBUG
+#define YY_CTX_LOCAL
+
+#define YY_CTX_MEMBERS \
+	int doOutput; \
+	int insideParen; \
+	FILE *ifp; \
+	const char *ifname;
+
+#define MYRULE_SEP	"<-"
+#define MYRULE_END "\n"
+#define MYALT_SEP	"/"
+
+%}
+
+ Grammar =
+	Spacing Definition+ EndOfFile
+	;
+ Spacing =
+	( Space |  Comment )*
+	;
+ Definition =
+	Identifier LEFTARROW {printf(" " MYRULE_SEP "\n\t");} Expression? {printf(MYRULE_END);}
+	;
+ EndOfFile =
+	!.
+	;
+ Identifier =
+	<IdentStart IdentCont*> Spacing  {printName(yy, yytext);}
+	;
+ LEFTARROW =
+	( "<--" |  "<-|" |  "<-" |  "<==" ) Spacing
+	;
+ Expression =
+	Sequence ( SLASH {printAltSym(yy);} Sequence )*
+	;
+ Sequence =
+	error error*
+	;
+ SLASH =
+	"/" Spacing
+	;
+ error =
+	Prefix ( TILDE Action )?
+	;
+ Prefix =
+	AT Action | AND Action | AND Suffix | NOT Suffix |  Suffix
+	;
+ TILDE =
+	"~" Spacing
+	;
+ Action =
+	"{" Braces* "}" Spacing
+	;
+ AT =
+	"@" Spacing
+	;
+ AND =
+	"&" Spacing
+	;
+ Suffix =
+	Primary ( QUESTION | STAR | PLUS )?
+	;
+ NOT =
+	"!" {printf(" !");} Spacing
+	;
+ Primary =
+	AT? ( Identifier COLON Identifier! LEFTARROW | Identifier! LEFTARROW)
+	| OPEN Expression CLOSE
+	| AT? Literal( "i" {printf("i");} ! IdentStart Spacing )?
+	| Class
+	| DOT
+	| Action
+	| BEGIN
+	| END
+	;
+ QUESTION =
+	"?" {printf("?");} Spacing
+	;
+ STAR =
+	"*" {printf("*");} Spacing
+	;
+ PLUS =
+	"+" {printf("+");} Spacing
+	;
+ COLON =
+	":" Spacing
+	;
+ OPEN =
+	"("  {printf(" ("); ++yy->insideParen;} Spacing
+	;
+ CLOSE =
+	")"  {printf(" )"); --yy->insideParen;} Spacing
+	;
+ Literal =
+	<['](! ['] Char)* [']> {printName(yy, yytext);} Spacing
+	| <["](! ["] Char)* ["]> {printName(yy, yytext);} Spacing
+	| <[`](! [`] Char)* [`]> {printName(yy, yytext);} Spacing
+	;
+ IdentStart =
+	 [a-zA-Z_]
+	;
+ Class =
+	<"["(! "]" Range)* "]"> {printName(yy, yytext);} Spacing
+	;
+ DOT =
+	"." {printf(".");} Spacing
+	;
+ BEGIN =
+	"<" Spacing
+	;
+ END =
+	">" Spacing
+	;
+ IdentCont =
+	IdentStart |  [0-9]
+	;
+ Char =
+	(( "\\" [abefnrtv'"\[\]\\]) | ( "\\" [0-3] [0-7] [0-7]) | ( "\\" [0-7] [0-7]?) | ( "\\" "-") | (! "\\".))
+	;
+ Range =
+	(( Char "-" Char) |  Char)
+	;
+ Space =
+	" " |  "\t" |  EndOfLine
+	;
+ Comment =
+	"#"(! EndOfLine.)* EndOfLine
+	;
+ EndOfLine =
+	"\r\n" |  "\n\r" |  "\n" |  "\r"
+	;
+ Braces =
+	"{" Braces* "}"
+	|  LiteralBraces
+	| ! "}"( EndOfLine | .)
+	;
+ LiteralBraces =
+	['](! ['] Char)* [']
+	| ["](! ["] Char)* ["]
+	;
+
+%%
+
+int igetchar(yycontext *ctx)
+{
+	return fgetc(ctx->ifp);
+}
+
+void printName(yycontext *ctx, const char *s) {
+	if(ctx->doOutput) {
+		printf(" %s", s);
+		/*
+		size_t len = strlen(s);
+		fputc(' ', stdout);
+		for(size_t i=0; i < len; ++i) fputc(s[i] == '-' ? '_' : s[i], stdout);
+		fputc(' ', stdout);
+		*/
+	}
+}
+void printDefined(yycontext *ctx, const char *s) {
+	//printf("===printDefined: %d : %s\n", ctx->doOutput, s);
+	#define MYSTRNCMP(ps, ls) (strncmp(ps, ls, sizeof(ls)-1))
+	if(ctx->doOutput) {
+		if(MYSTRNCMP(s, "nl") == 0) printf(" '\\n' ");
+		else if(MYSTRNCMP(s, "cn") == 0) printf(" '\\n' ");
+		else if(MYSTRNCMP(s, "cr") == 0) printf(" '\\r' ");
+		else if(MYSTRNCMP(s, "s") == 0)
+			printf(" (' ' " MYALT_SEP " '\\t' " MYALT_SEP " '\\r' " MYALT_SEP " '\\n') ");
+	}
+}
+void printElmNSP(yycontext *ctx, const char *s) {
+	if(ctx->doOutput) printf("%s", s);
+}
+void printElm(yycontext *ctx, const char *s) {
+	if(ctx->doOutput) printf(" %s ", s);
+}
+void printAltSym(yycontext *ctx) {
+	if(ctx->doOutput) {
+		printf("%s" MYALT_SEP, ctx->insideParen ? " " : "\n\t");
+	}
+}
+
+
+int main(int argc, char *argv[])
+{
+  int rc;
+  /* create a local parser context in automatic storage */
+  yycontext yy;
+  /* the context *must* be initialised to zero before first use*/
+  memset(&yy, 0, sizeof(yy));
+
+  if(argc < 2) {
+	printf("usage: %s peg_filename\n", argv[0]);
+	return -1;
+  }
+  yy.ifp = fopen(argv[1], "r");
+  if(yy.ifp == NULL) {
+     printf("failed to open: %s\n", argv[1]);
+     return -2;
+  }
+  yy.ifname = argv[1];
+  yy.__lineno = 1;
+  yy.doOutput = 1;
+  /*while ( (*/rc = yyparse(&yy); /*) )*/  printf("yy %d\n", rc);
+
+  return 0;
+}
