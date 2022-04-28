@@ -134,7 +134,7 @@ literal=	['] < ( !['] char )* > ['] -
 
 class=		'[' < ( !']' range )* > ']' -
 
-range=		char '-' char | char
+range=		char '-' ! ']' char | char
 
 char=		'\\' [-abefnrtv'"\[\]\\]
 |		'\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]

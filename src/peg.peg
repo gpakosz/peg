@@ -60,7 +60,7 @@ Literal		<- ['] < (!['] Char )* > ['] Spacing		#ikp inserted < ... >
 		 / ["] < (!["] Char )* > ["] Spacing		#ikp inserted < ... >
 		 / [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
-Range		<- Char '-' Char / Char
+Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
 		 / '\\' [0-3][0-7][0-7]
 		 / '\\' [0-7][0-7]?
