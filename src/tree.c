@@ -424,10 +424,15 @@ static void EBNF_fprint(FILE *stream, Node *node)
   fprintf(stream, "\n");
 }
 
+static Node **getOrderedRules()
+{
+    return calloc(1, sizeof(Node*)*ruleCount);
+}
+
 void EBNF_print() {
     int i;
     Node *n;
-    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    Node **oderedRules = getOrderedRules();
     for (i=0, n= rules;  n;  n= n->any.next, ++i)
       oderedRules[i] = n;
     for(i=ruleCount-1; i >= 0; --i)
@@ -451,7 +456,7 @@ static void RuleLegPeg_fprint(FILE *stream, Node *node, int asLeg, int naked)
 void LEG_print(int naked) {
     int i;
     Node *n;
-    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    Node **oderedRules = getOrderedRules();
     for (i=0, n= rules;  n;  n= n->any.next, ++i)
       oderedRules[i] = n;
     for(i=ruleCount-1; i >= 0; --i)
@@ -462,7 +467,7 @@ void LEG_print(int naked) {
 void PEG_print(int naked) {
     int i;
     Node *n;
-    Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
+    Node **oderedRules = getOrderedRules();
     for (i=0, n= rules;  n;  n= n->any.next, ++i)
       oderedRules[i] = n;
     for(i=ruleCount-1; i >= 0; --i)
