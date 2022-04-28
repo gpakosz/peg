@@ -10,6 +10,7 @@ void printElmNSP(yycontext *ctx, const char *s);
 void printElm(yycontext *ctx, const char *s);
 void printAltSym(yycontext *ctx);
 int igetchar(yycontext *ctx);
+void synerr(yycontext *ctx, const char *errmsg);
 
 #define getchar() igetchar(yy)
 //#define YY_DEBUG
@@ -28,7 +29,7 @@ int igetchar(yycontext *ctx);
 %}
 
 grammar =
-	_ ( declaration | definition )+ trailer? end_of_file
+	_ ( declaration | definition )+ trailer? end_of_file ~{synerr(yy, "unexpected syntax");}
 	;
 _ =
 	( space | comment )*
@@ -217,6 +218,10 @@ void printAltSym(yycontext *ctx) {
 	}
 }
 
+void synerr(yycontext *ctx, const char *errmsg)
+{
+	fprintf(stderr, "%s:%d:%d %s\n", ctx->ifname, ctx->__lineno, ctx->__inputpos-ctx->__linenopos, errmsg);
+}
 
 int main(int argc, char *argv[])
 {
