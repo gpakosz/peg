@@ -1,3 +1,13 @@
+# Here is my fixes/improvements to the original peg/leg
+- Added case insensitive option to string literals `"Str"i` from https://github.com/AboutUs/pegleg
+- Added the extra features from `leg` to `peg` (`~{}`, `@{}`)
+- Did a kind of fix for debug dump to properly show literals like `'"]"'` 
+- Added string literals to the alternatives inside actions to properly handle actions with strings containing `"some }"`
+- Some other still moving changes to improve error messages
+- Add 2 new examples that convert peg/leg grammars to naked ones
+- Fix the handling of `-` as last character on charset class without quoting `[+-]`
+- ... see commits
+
 # peg/leg &mdash; recursive-descent parser generators for C
 
 `peg` and `leg` are tools for generating recursive-descent parsers: programs that perform pattern matching on
