@@ -131,10 +131,15 @@ void synerr(yycontext *ctx, const char *errmsg);
 	IdentStart |  [0-9]
 	;
  Char =
-	(( "\\" [abefnrtv'"\[\]\\]) | ( "\\" [0-3] [0-7] [0-7]) | ( "\\" [0-7] [0-7]?) | ( "\\" "-") | (! "\\".))
+	"\\" [abefnrtv'"\[\]\\]
+	| "\\" [0-3] [0-7] [0-7]
+	| "\\" [0-7] [0-7]?
+	| "\\" "-"
+	| ! "\\".
 	;
  Range =
-	(( Char "-" Char) |  Char)
+	Char "-" ! ']' Char
+	|  Char
 	;
  Space =
 	" " |  "\t" |  EndOfLine
@@ -222,6 +227,11 @@ int main(int argc, char *argv[])
   yy.__lineno = 1;
   yy.doOutput = 1;
   /*while ( (*/rc = yyparse(&yy); /*) )*/  printf("yy %d\n", rc);
+
+  /* release all resources associated with the context */
+  yyrelease(&yy);
+
+  fclose(yy.ifp);
 
   return 0;
 }

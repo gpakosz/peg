@@ -156,7 +156,7 @@ char =
 	| ! "\\" .
 	;
 range =
-	char "-" char
+	char "-" ! ']' char
 	| char
 	;
 braces =
@@ -245,5 +245,9 @@ int main(int argc, char *argv[])
   yy.doOutput = 1;
   /*while ( (*/rc = yyparse(&yy); /*) )*/  printf("yy %d\n", rc);
 
+  /* release all resources associated with the context */
+  yyrelease(&yy);
+
+  fclose(yy.ifp);
   return 0;
 }
