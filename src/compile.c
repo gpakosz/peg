@@ -89,6 +89,23 @@ static int cnext(unsigned char **ccp)
     return c;
 }
 
+static const char *escapedChar(int ch)
+{
+    switch(ch)
+    {
+        case '\a':  return "\\a";	/* bel */
+        case '\b':  return "\\b";	/* bs */
+        case '\e':  return "\\e";	/* esc */
+        case '\f':  return "\\f";	/* ff */
+        case '\n':  return "\\n";	/* nl */
+        case '\r':  return "\\r";   	/* cr */
+        case '\t':  return "\\t";   	/* ht */
+        case '\v':  return "\\v";	/* vt */
+        case '\'':  return "\\'";	/* sq */
+    }
+    return NULL;
+}
+
 static char *makeCharClass(unsigned char *cclass)
 {
   unsigned char	 bits[32];
@@ -166,10 +183,8 @@ static void Node_compile_c_ko(Node *node, int ko)
         const char *caseType = node->string.caseInsensitive ? "CaseInsensitive" : "";
 	if (1 == len)
 	  {
-	    if ('\'' == node->string.value[0])
-	      fprintf(output, "  if (!yymatchChar%s(yy, '\\'')) goto l%d;", caseType, ko);
-	    else
-	      fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", caseType, node->string.value, ko);
+            const char *chStr = escapedChar(node->string.value[0]);
+	    fprintf(output, "  if (!yymatchChar%s(yy, '%s')) goto l%d;", caseType, chStr ? chStr : node->string.value, ko);
 	  }
 	else
 	  if (2 == len && '\\' == node->string.value[0])
@@ -575,6 +590,23 @@ YY_LOCAL(int) yymatchDot(yycontext *yy)\n\
   if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;\n\
   ++yy->__pos;\n\
   return 1;\n\
+}\n\
+\n\
+YY_LOCAL(const char *) yyescapedChar(int ch)\n\
+{\n\
+    switch(ch)\n\
+    {\n\
+        case '\\a':  return \"\\\\a\";	/* bel */\n\
+        case '\\b':  return \"\\\\b\";	/* bs */\n\
+        case '\\e':  return \"\\\\e\";	/* esc */\n\
+        case '\\f':  return \"\\\\f\";	/* ff */\n\
+        case '\\n':  return \"\\\\n\";	/* nl */\n\
+        case '\\r':  return \"\\\\r\";   	/* cr */\n\
+        case '\\t':  return \"\\\\t\";   	/* ht */\n\
+        case '\\v':  return \"\\\\v\";	/* vt */\n\
+        case '\\'':  return \"\\\\'\";	/* sq */\n\
+    }\n\
+    return NULL;\n\
 }\n\
 \n\
 YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
