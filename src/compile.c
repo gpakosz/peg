@@ -510,6 +510,9 @@ struct _yycontext {\n\
   int       __inputpos;\n\
   int       __lineno;\n\
   int       __linenopos;\n\
+#ifdef YY_DEBUG\n\
+  char      __escapeCharBuf[4];\n\
+#endif\n\
 #ifdef YY_CTX_MEMBERS\n\
   YY_CTX_MEMBERS\n\
 #endif\n\
@@ -592,22 +595,27 @@ YY_LOCAL(int) yymatchDot(yycontext *yy)\n\
   return 1;\n\
 }\n\
 \n\
-YY_LOCAL(const char *) yyescapedChar(int ch)\n\
+#ifdef YY_DEBUG\n\
+YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
 {\n\
+    const char *strCh = NULL;\n\
     switch(ch)\n\
     {\n\
-        case '\\a':  return \"\\\\a\";	/* bel */\n\
-        case '\\b':  return \"\\\\b\";	/* bs */\n\
-        case '\\e':  return \"\\\\e\";	/* esc */\n\
-        case '\\f':  return \"\\\\f\";	/* ff */\n\
-        case '\\n':  return \"\\\\n\";	/* nl */\n\
-        case '\\r':  return \"\\\\r\";   	/* cr */\n\
-        case '\\t':  return \"\\\\t\";   	/* ht */\n\
-        case '\\v':  return \"\\\\v\";	/* vt */\n\
-        case '\\'':  return \"\\\\'\";	/* sq */\n\
+        case '\\a':  strCh= \"\\\\a\"; break;	/* bel */\n\
+        case '\\b':  strCh= \"\\\\b\"; break;	/* bs */\n\
+        case '\\e':  strCh= \"\\\\e\"; break;	/* esc */\n\
+        case '\\f':  strCh= \"\\\\f\"; break;	/* ff */\n\
+        case '\\n':  strCh= \"\\\\n\"; break;	/* nl */\n\
+        case '\\r':  strCh= \"\\\\r\"; break;   /* cr */\n\
+        case '\\t':  strCh= \"\\\\t\"; break;   /* ht */\n\
+        case '\\v':  strCh= \"\\\\v\"; break;	/* vt */\n\
+        //case '\\'':  strCh= \"\\\\'\"; break;	/* sq */\n\
+        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%c\", ch);\n\
     }\n\
-    return NULL;\n\
+    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%s\", strCh);\n\
+    return yy->__escapeCharBuf;\n\
 }\n\
+#endif\n\
 \n\
 YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
 {\n\
@@ -615,10 +623,10 @@ YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
   if ((unsigned char)yy->__buf[yy->__pos] == c)\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchChar(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"  ok   yymatchChar(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchChar(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"  fail yymatchChar(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -628,10 +636,10 @@ YY_LOCAL(int) yymatchCharCaseInsensitive(yycontext *yy, int c)\n\
   if (tolower(yy->__buf[yy->__pos]) == tolower(c))\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"  ok   yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\\n\", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"  fail yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\

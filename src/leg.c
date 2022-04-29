@@ -142,6 +142,9 @@ struct _yycontext {
   int       __inputpos;
   int       __lineno;
   int       __linenopos;
+#ifdef YY_DEBUG
+  char      __escapeCharBuf[4];
+#endif
 #ifdef YY_CTX_MEMBERS
   YY_CTX_MEMBERS
 #endif
@@ -224,16 +227,38 @@ YY_LOCAL(int) yymatchDot(yycontext *yy)
   return 1;
 }
 
+#ifdef YY_DEBUG
+YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)
+{
+    const char *strCh = NULL;
+    switch(ch)
+    {
+        case '\a':  strCh= "\\a"; break;	/* bel */
+        case '\b':  strCh= "\\b"; break;	/* bs */
+        case '\e':  strCh= "\\e"; break;	/* esc */
+        case '\f':  strCh= "\\f"; break;	/* ff */
+        case '\n':  strCh= "\\n"; break;	/* nl */
+        case '\r':  strCh= "\\r"; break;   /* cr */
+        case '\t':  strCh= "\\t"; break;   /* ht */
+        case '\v':  strCh= "\\v"; break;	/* vt */
+        //case '\'':  strCh= "\\'"; break;	/* sq */
+        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%c", ch);
+    }
+    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%s", strCh);
+    return yy->__escapeCharBuf;
+}
+#endif
+
 YY_LOCAL(int) yymatchChar(yycontext *yy, int c)
 {
   if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;
   if ((unsigned char)yy->__buf[yy->__pos] == c)
     {
       ++yy->__pos;
-      yyprintf((stderr, "  ok   yymatchChar(yy, %c) @%d:%d %s\n", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
+      yyprintf((stderr, "  ok   yymatchChar(yy, %s) @%d:%d %s\n", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
       return 1;
     }
-  yyprintf((stderr, "  fail yymatchChar(yy, %c) @%d:%d %s\n", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
+  yyprintf((stderr, "  fail yymatchChar(yy, %s) @%d:%d %s\n", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
   return 0;
 }
 
@@ -243,10 +268,10 @@ YY_LOCAL(int) yymatchCharCaseInsensitive(yycontext *yy, int c)
   if (tolower(yy->__buf[yy->__pos]) == tolower(c))
     {
       ++yy->__pos;
-      yyprintf((stderr, "  ok   yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\n", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
+      yyprintf((stderr, "  ok   yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\n", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
       return 1;
     }
-  yyprintf((stderr, "  fail yymatchCharCaseInsensitive(yy, %c) @%d:%d %s\n", c, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
+  yyprintf((stderr, "  fail yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\n", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));
   return 0;
 }
 
