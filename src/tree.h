@@ -90,7 +90,6 @@ extern Node *makeDot(void);
 extern Node *makeCharacter(char *text);
 extern Node *makeString(char *text);
 extern void  setTopStrCharCaseInsensitive();
-extern Node *makeStringCaseInsensitive(char *text);
 extern Node *makeClass(char *text);
 extern Node *makeAction(int lineNumber, char *text);
 extern Node *makeInline(char *text);

@@ -147,14 +147,6 @@ void setTopStrCharCaseInsensitive()
   }
 }
 
-Node *makeStringCaseInsensitive(char *text)
-{
-  Node *node= newNode(String);
-  node->string.value= strdup(text);
-  node->string.caseInsensitive= 1;
-  return node;
-}
-
 Node *makeClass(char *text)
 {
   Node *node= newNode(Class);
