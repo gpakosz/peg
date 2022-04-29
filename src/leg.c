@@ -150,6 +150,28 @@ struct _yycontext {
 #endif
 };
 
+#ifdef YY_DEBUG
+YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)
+{
+    const char *strCh = NULL;
+    switch(ch)
+    {
+        case '\a':  strCh= "\\a"; break;	/* bel */
+        case '\b':  strCh= "\\b"; break;	/* bs */
+        case '\e':  strCh= "\\e"; break;	/* esc */
+        case '\f':  strCh= "\\f"; break;	/* ff */
+        case '\n':  strCh= "\\n"; break;	/* nl */
+        case '\r':  strCh= "\\r"; break;   /* cr */
+        case '\t':  strCh= "\\t"; break;   /* ht */
+        case '\v':  strCh= "\\v"; break;	/* vt */
+        //case '\'':  strCh= "\\'"; break;	/* sq */
+        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%c", ch);
+    }
+    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%s", strCh);
+    return yy->__escapeCharBuf;
+}
+#endif
+
 #ifdef YY_CTX_LOCAL
 #define YY_CTX_PARAM_	yycontext *yyctx,
 #define YY_CTX_PARAM	yycontext *yyctx
@@ -169,7 +191,7 @@ struct _yycontext {
         {++yy->__lineno;yy->__linenopos=yy->__inputpos;}\
       ++yy->__inputpos;	                		\
     }                                           	\
-    yyprintf((stderr, "<%c>", yyc));			\
+    yyprintf((stderr, "<%s>", yyescapedChar(yy, yyc)));\
   }
 #endif
 #else
@@ -190,7 +212,7 @@ yycontext *yyctx= &_yyctx;
         {++yyctx->__lineno;yyctx->__linenopos=yyctx->__inputpos;}\
       ++yyctx->__inputpos;	                		\
     }                                           	\
-    yyprintf((stderr, "<%c>", yyc));			\
+    yyprintf((stderr, "<%s>", yyescapedChar(yyctx, yyc)));\
   }
 #endif
 #endif
@@ -226,28 +248,6 @@ YY_LOCAL(int) yymatchDot(yycontext *yy)
   ++yy->__pos;
   return 1;
 }
-
-#ifdef YY_DEBUG
-YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)
-{
-    const char *strCh = NULL;
-    switch(ch)
-    {
-        case '\a':  strCh= "\\a"; break;	/* bel */
-        case '\b':  strCh= "\\b"; break;	/* bs */
-        case '\e':  strCh= "\\e"; break;	/* esc */
-        case '\f':  strCh= "\\f"; break;	/* ff */
-        case '\n':  strCh= "\\n"; break;	/* nl */
-        case '\r':  strCh= "\\r"; break;   /* cr */
-        case '\t':  strCh= "\\t"; break;   /* ht */
-        case '\v':  strCh= "\\v"; break;	/* vt */
-        //case '\'':  strCh= "\\'"; break;	/* sq */
-        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%c", ch);
-    }
-    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), "%s", strCh);
-    return yy->__escapeCharBuf;
-}
-#endif
 
 YY_LOCAL(int) yymatchChar(yycontext *yy, int c)
 {

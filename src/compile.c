@@ -518,6 +518,28 @@ struct _yycontext {\n\
 #endif\n\
 };\n\
 \n\
+#ifdef YY_DEBUG\n\
+YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
+{\n\
+    const char *strCh = NULL;\n\
+    switch(ch)\n\
+    {\n\
+        case '\\a':  strCh= \"\\\\a\"; break;	/* bel */\n\
+        case '\\b':  strCh= \"\\\\b\"; break;	/* bs */\n\
+        case '\\e':  strCh= \"\\\\e\"; break;	/* esc */\n\
+        case '\\f':  strCh= \"\\\\f\"; break;	/* ff */\n\
+        case '\\n':  strCh= \"\\\\n\"; break;	/* nl */\n\
+        case '\\r':  strCh= \"\\\\r\"; break;   /* cr */\n\
+        case '\\t':  strCh= \"\\\\t\"; break;   /* ht */\n\
+        case '\\v':  strCh= \"\\\\v\"; break;	/* vt */\n\
+        //case '\\'':  strCh= \"\\\\'\"; break;	/* sq */\n\
+        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%c\", ch);\n\
+    }\n\
+    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%s\", strCh);\n\
+    return yy->__escapeCharBuf;\n\
+}\n\
+#endif\n\
+\n\
 #ifdef YY_CTX_LOCAL\n\
 #define YY_CTX_PARAM_	yycontext *yyctx,\n\
 #define YY_CTX_PARAM	yycontext *yyctx\n\
@@ -537,7 +559,7 @@ struct _yycontext {\n\
         {++yy->__lineno;yy->__linenopos=yy->__inputpos;}\\\n\
       ++yy->__inputpos;	                		\\\n\
     }                                           	\\\n\
-    yyprintf((stderr, \"<%c>\", yyc));			\\\n\
+    yyprintf((stderr, \"<%s>\", yyescapedChar(yy, yyc)));\\\n\
   }\n\
 #endif\n\
 #else\n\
@@ -558,7 +580,7 @@ yycontext *yyctx= &_yyctx;\n\
         {++yyctx->__lineno;yyctx->__linenopos=yyctx->__inputpos;}\\\n\
       ++yyctx->__inputpos;	                		\\\n\
     }                                           	\\\n\
-    yyprintf((stderr, \"<%c>\", yyc));			\\\n\
+    yyprintf((stderr, \"<%s>\", yyescapedChar(yyctx, yyc)));\\\n\
   }\n\
 #endif\n\
 #endif\n\
@@ -594,28 +616,6 @@ YY_LOCAL(int) yymatchDot(yycontext *yy)\n\
   ++yy->__pos;\n\
   return 1;\n\
 }\n\
-\n\
-#ifdef YY_DEBUG\n\
-YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
-{\n\
-    const char *strCh = NULL;\n\
-    switch(ch)\n\
-    {\n\
-        case '\\a':  strCh= \"\\\\a\"; break;	/* bel */\n\
-        case '\\b':  strCh= \"\\\\b\"; break;	/* bs */\n\
-        case '\\e':  strCh= \"\\\\e\"; break;	/* esc */\n\
-        case '\\f':  strCh= \"\\\\f\"; break;	/* ff */\n\
-        case '\\n':  strCh= \"\\\\n\"; break;	/* nl */\n\
-        case '\\r':  strCh= \"\\\\r\"; break;   /* cr */\n\
-        case '\\t':  strCh= \"\\\\t\"; break;   /* ht */\n\
-        case '\\v':  strCh= \"\\\\v\"; break;	/* vt */\n\
-        //case '\\'':  strCh= \"\\\\'\"; break;	/* sq */\n\
-        default:  snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%c\", ch);\n\
-    }\n\
-    if(strCh) snprintf(yy->__escapeCharBuf, sizeof(yy->__escapeCharBuf), \"%s\", strCh);\n\
-    return yy->__escapeCharBuf;\n\
-}\n\
-#endif\n\
 \n\
 YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
 {\n\
