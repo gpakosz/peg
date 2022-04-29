@@ -43,7 +43,11 @@ Primary		<- AT? (
                     / Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
                     )
 		 / OPEN Expression CLOSE ~{yyerror("missing expected `)`");}
-		 / AT? Literal			{ push(makeString(yytext)); }
+		 / AT? (
+                        LiteralSQ		{ push(makeString(yytext, '\'')); }
+                        / LiteralDQ		{ push(makeString(yytext, '"')); }
+                        / LiteralBQ		{ push(makeString(yytext, '`')); }
+                        )
                     ('i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
@@ -56,9 +60,9 @@ Primary		<- AT? (
 Identifier	<- < IdentStart IdentCont* > Spacing		#ikp inserted < ... >
 IdentStart	<- [a-zA-Z_]
 IdentCont	<- IdentStart / [0-9]
-Literal		<- ['] < (!['] Char )* > ['] Spacing		#ikp inserted < ... >
-		 / ["] < (!["] Char )* > ["] Spacing		#ikp inserted < ... >
-		 / [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
+LiteralSQ	<- ['] < (!['] Char )* > ['] Spacing		#ikp inserted < ... >
+LiteralDQ	<- ["] < (!["] Char )* > ["] Spacing		#ikp inserted < ... >
+LiteralBQ	<- [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv

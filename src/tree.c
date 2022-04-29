@@ -123,15 +123,17 @@ Node *makeCharacter(char *text)
 {
   Node *node= newNode(Character);
   node->character.value= strdup(text);
-  node->string.caseInsensitive= 0;
+  node->character.caseInsensitive= 0;
+  node->character.quote = 0;
   return node;
 }
 
-Node *makeString(char *text)
+Node *makeString(char *text, int quote)
 {
   Node *node= newNode(String);
   node->string.value= strdup(text);
   node->string.caseInsensitive= 0;
+  node->string.quote= quote;
   return node;
 }
 

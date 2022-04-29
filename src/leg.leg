@@ -116,8 +116,11 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 			COLON identifier !EQUAL		{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
 |		identifier !EQUAL			{ push(makeName(findRule(yytext))); }
 |		OPEN expression CLOSE ~{yyerror("missing expected `)`");}
-|		literal					{ push(makeString(yytext)); }
-                    ('i' ![-a-zA-Z_] -                { setTopStrCharCaseInsensitive(); })?
+|		(
+                    literalSQ				{ push(makeString(yytext, '\'')); }
+                    | literalDQ			{ push(makeString(yytext, '"')); }
+                    | literalBQ			{ push(makeString(yytext, '`')); }
+                ) ('i' ![-a-zA-Z_] -			{ setTopStrCharCaseInsensitive(); })?
 |		class					{ push(makeClass(yytext)); }
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }
@@ -128,9 +131,9 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 
 identifier=	< [-a-zA-Z_][-a-zA-Z_0-9]* > -
 
-literal=	['] < ( !['] char )* > ['] -
-|		["] < ( !["] char )* > ["] -
-|		[`] < ( ![`] char )* > [`] -
+literalSQ=	['] < ( !['] char )* > ['] -
+literalDQ=	["] < ( !["] char )* > ["] -
+literalBQ=	[`] < ( ![`] char )* > [`] -
 
 class=		'[' < ( !']' range )* > ']' -
 
