@@ -5,7 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #define YYRULECOUNT 42
-#line 383 "leg.leg"
+#line 386 "leg.leg"
 
 # include "tree.h"
 # include "version.h"
@@ -462,7 +462,7 @@ YY_ACTION(void) yy_1_end_of_line(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_end_of_line\n"));
   {
-#line 543
+#line 546
    ++lineNumber ;
   }
 #undef yythunkpos
@@ -476,7 +476,7 @@ YY_ACTION(void) yy_1_action(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_action\n"));
   {
-#line 512
+#line 515
    actionLine= lineNumber ;
   }
 #undef yythunkpos
@@ -490,7 +490,7 @@ YY_ACTION(void) yy_12_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_12_primary\n"));
   {
-#line 491
+#line 494
    push(makePredicate("YY_END")); ;
   }
 #undef yythunkpos
@@ -504,7 +504,7 @@ YY_ACTION(void) yy_11_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_11_primary\n"));
   {
-#line 490
+#line 493
    push(makePredicate("YY_BEGIN")); ;
   }
 #undef yythunkpos
@@ -518,7 +518,7 @@ YY_ACTION(void) yy_10_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_10_primary\n"));
   {
-#line 489
+#line 492
    push(makeAction(actionLine, yytext)); ;
   }
 #undef yythunkpos
@@ -532,7 +532,7 @@ YY_ACTION(void) yy_9_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_9_primary\n"));
   {
-#line 488
+#line 491
    push(makeDot()); ;
   }
 #undef yythunkpos
@@ -546,7 +546,7 @@ YY_ACTION(void) yy_8_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_8_primary\n"));
   {
-#line 487
+#line 490
    push(makeClass(yytext)); ;
   }
 #undef yythunkpos
@@ -560,7 +560,7 @@ YY_ACTION(void) yy_7_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_7_primary\n"));
   {
-#line 486
+#line 489
    setTopStrCharCaseInsensitive(); ;
   }
 #undef yythunkpos
@@ -574,7 +574,7 @@ YY_ACTION(void) yy_6_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_6_primary\n"));
   {
-#line 485
+#line 488
    push(makeString(yytext, '`')); ;
   }
 #undef yythunkpos
@@ -588,7 +588,7 @@ YY_ACTION(void) yy_5_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_5_primary\n"));
   {
-#line 484
+#line 487
    push(makeString(yytext, '"')); ;
   }
 #undef yythunkpos
@@ -602,7 +602,7 @@ YY_ACTION(void) yy_4_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_4_primary\n"));
   {
-#line 483
+#line 486
    push(makeString(yytext, '\'')); ;
   }
 #undef yythunkpos
@@ -616,7 +616,7 @@ YY_ACTION(void) yy_3_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_3_primary\n"));
   {
-#line 480
+#line 483
    push(makeName(findRule(yytext))); ;
   }
 #undef yythunkpos
@@ -630,7 +630,7 @@ YY_ACTION(void) yy_2_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_primary\n"));
   {
-#line 479
+#line 482
    Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); ;
   }
 #undef yythunkpos
@@ -644,7 +644,7 @@ YY_ACTION(void) yy_1_primary(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_primary\n"));
   {
-#line 478
+#line 481
    push(makeVariable(yytext)); ;
   }
 #undef yythunkpos
@@ -658,7 +658,7 @@ YY_ACTION(void) yy_3_suffix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_3_suffix\n"));
   {
-#line 475
+#line 478
    push(makePlus (pop())); ;
   }
 #undef yythunkpos
@@ -672,7 +672,7 @@ YY_ACTION(void) yy_2_suffix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_suffix\n"));
   {
-#line 474
+#line 477
    push(makeStar (pop())); ;
   }
 #undef yythunkpos
@@ -686,7 +686,7 @@ YY_ACTION(void) yy_1_suffix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_suffix\n"));
   {
-#line 473
+#line 476
    push(makeQuery(pop())); ;
   }
 #undef yythunkpos
@@ -700,7 +700,7 @@ YY_ACTION(void) yy_4_prefix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_4_prefix\n"));
   {
-#line 470
+#line 473
    push(makePeekNot(pop())); ;
   }
 #undef yythunkpos
@@ -714,7 +714,7 @@ YY_ACTION(void) yy_3_prefix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_3_prefix\n"));
   {
-#line 469
+#line 472
    push(makePeekFor(pop())); ;
   }
 #undef yythunkpos
@@ -728,7 +728,7 @@ YY_ACTION(void) yy_2_prefix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_prefix\n"));
   {
-#line 468
+#line 471
    push(makePredicate(yytext)); ;
   }
 #undef yythunkpos
@@ -742,7 +742,7 @@ YY_ACTION(void) yy_1_prefix(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_prefix\n"));
   {
-#line 467
+#line 470
    push(makeInline(yytext)); ;
   }
 #undef yythunkpos
@@ -756,7 +756,7 @@ YY_ACTION(void) yy_1_error(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_error\n"));
   {
-#line 464
+#line 467
    push(makeError(pop(), yytext)); ;
   }
 #undef yythunkpos
@@ -770,7 +770,7 @@ YY_ACTION(void) yy_1_sequence(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_sequence\n"));
   {
-#line 461
+#line 464
    Node *f= pop();  push(Sequence_append(pop(), f)); ;
   }
 #undef yythunkpos
@@ -784,7 +784,7 @@ YY_ACTION(void) yy_1_expression(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_expression\n"));
   {
-#line 458
+#line 461
    Node *f= pop();  push(Alternate_append(pop(), f)); ;
   }
 #undef yythunkpos
@@ -798,7 +798,7 @@ YY_ACTION(void) yy_2_definition(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_definition\n"));
   {
-#line 455
+#line 458
    Node *e= pop();  Rule_setExpression(pop(), e); ;
   }
 #undef yythunkpos
@@ -812,7 +812,7 @@ YY_ACTION(void) yy_1_definition(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_definition\n"));
   {
-#line 453
+#line 456
    if (push(beginRule(findRule(yytext)))->rule.expression)
 							    fprintf(stderr, "rule '%s' redefined\n", yytext); ;
   }
@@ -827,7 +827,7 @@ YY_ACTION(void) yy_2_trailer(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_trailer\n"));
   {
-#line 451
+#line 454
    makeTrailer(headerLine, yytext); ;
   }
 #undef yythunkpos
@@ -841,7 +841,7 @@ YY_ACTION(void) yy_1_trailer(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_trailer\n"));
   {
-#line 450
+#line 453
    headerLine= lineNumber ;
   }
 #undef yythunkpos
@@ -855,7 +855,7 @@ YY_ACTION(void) yy_2_declaration(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_2_declaration\n"));
   {
-#line 448
+#line 451
    makeHeader(headerLine, yytext); ;
   }
 #undef yythunkpos
@@ -869,7 +869,7 @@ YY_ACTION(void) yy_1_declaration(yycontext *yy, char *yytext, int yyleng)
 #define yythunkpos yy->__thunkpos
   yyprintf((stderr, "do yy_1_declaration\n"));
   {
-#line 446
+#line 449
    headerLine= lineNumber; ;
   }
 #undef yythunkpos
@@ -1619,7 +1619,7 @@ YY_PARSE(yycontext *) YYRELEASE(yycontext *yyctx)
 }
 
 #endif
-#line 546 "leg.leg"
+#line 549 "leg.leg"
 
 
 void yyerror(char *message)
@@ -1784,6 +1784,9 @@ int main(int argc, char **argv)
 
   if (nakedFlag)
     LEG_print(nakedFlag);
+
+  if(ebnfFlag || pegFlag || nakedFlag)
+    return 0;
 
   Rule_compile_c_header();
 

@@ -207,6 +207,9 @@ int main(int argc, char **argv)
   if (nakedFlag)
     PEG_print(nakedFlag);
 
+  if(ebnfFlag || legFlag || nakedFlag)
+    return 0;
+
   Rule_compile_c_header();
   if (rules) Rule_compile_c(rules, nolinesFlag);
 

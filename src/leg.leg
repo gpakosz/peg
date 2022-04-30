@@ -345,6 +345,9 @@ int main(int argc, char **argv)
   if (nakedFlag)
     LEG_print(nakedFlag);
 
+  if(ebnfFlag || pegFlag || nakedFlag)
+    return 0;
+
   Rule_compile_c_header();
 
   for (; headers;  headers= headers->next)
