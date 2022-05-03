@@ -66,6 +66,8 @@ LiteralBQ	<- [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
+		/ '\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]
+		/ '\\' 'x'[0-9A-Fa-f]
 		 / '\\' [0-3][0-7][0-7]
 		 / '\\' [0-7][0-7]?
 		 / '\\' '-'					#ikp added
