@@ -382,9 +382,9 @@ static void Node_fprint(FILE *stream, Node *node, int depth, int asEbnf, int asL
 
     case PeekFor:	fprintf(stream, asEbnf ? " _AND_ " : "&");  Node_fprint(stream, node->query.element, depth+1, asEbnf, asLeg, naked);	break;
     case PeekNot:	fprintf(stream, asEbnf ? " _NOT_ " : " !");  Node_fprint(stream, node->query.element, depth+1, asEbnf, asLeg, naked);	break;
-    case Query:		Node_fprint(stream, node->query.element, asEbnf, depth+1, asLeg, naked);  fprintf(stream, "?");	break;
-    case Star:		Node_fprint(stream, node->query.element, asEbnf, depth+1, asLeg, naked);  fprintf(stream, "*");	break;
-    case Plus:		Node_fprint(stream, node->query.element, asEbnf, depth+1, asLeg, naked);  fprintf(stream, "+");	break;
+    case Query:		Node_fprint(stream, node->query.element, depth+1, asEbnf, asLeg, naked);  fprintf(stream, "?");	break;
+    case Star:		Node_fprint(stream, node->query.element, depth+1, asEbnf, asLeg, naked);  fprintf(stream, "*");	break;
+    case Plus:		Node_fprint(stream, node->query.element, depth+1, asEbnf, asLeg, naked);  fprintf(stream, "+");	break;
     default:
       fprintf(stream, "\nunknown node type %d\n", node->type);
       exit(1);
