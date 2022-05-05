@@ -41,6 +41,7 @@
   int   verboseFlag= 0;
   int   ebnfFlag= 0;
   int   pegFlag= 0;
+  int   pegjsFlag= 0;
   int   nakedFlag= 0;
   int   nolinesFlag= 0;
 
@@ -120,7 +121,7 @@ primary=	identifier				{ push(makeVariable(yytext)); }
                     literalSQ				{ push(makeString(yytext, '\'')); }
                     | literalDQ			{ push(makeString(yytext, '"')); }
                     | literalBQ			{ push(makeString(yytext, '`')); }
-                ) (!- 'i' ![-a-zA-Z_] -			{ setTopStrCharCaseInsensitive(); })?
+                ) ('i' ![-a-zA-Z_]		{ setTopStrCharCaseInsensitive(); })? -
 |		class					{ push(makeClass(yytext)); }
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }
@@ -131,9 +132,9 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 
 identifier=	< [-a-zA-Z_][-a-zA-Z_0-9]* > -
 
-literalSQ=	['] < ( !['] char )* > ['] -
-literalDQ=	["] < ( !["] char )* > ["] -
-literalBQ=	[`] < ( ![`] char )* > [`] -
+literalSQ=	['] < ( !['] char )* > [']
+literalDQ=	["] < ( !["] char )* > ["]
+literalBQ=	[`] < ( ![`] char )* > [`]
 
 class=		'[' < ( !']' range )* > ']' -
 
@@ -236,6 +237,7 @@ static void usage(char *name)
   fprintf(stderr, "  -o <ofile>  write output to <ofile>\n");
   fprintf(stderr, "  -P          do not generate #line directives\n");
   fprintf(stderr, "  -p          output peg format\n");
+  fprintf(stderr, "  -j          output pegjs/peggy format\n");
   fprintf(stderr, "  -n          output naked\n");
   fprintf(stderr, "  -e          output EBNF\n");
   fprintf(stderr, "  -v          be verbose\n");
@@ -255,7 +257,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "PVho:vepn")))
+  while (-1 != (c= getopt(argc, argv, "PVho:vepnj")))
     {
       switch (c)
 	{
@@ -293,6 +295,10 @@ int main(int argc, char **argv)
 
 	case 'n':
 	  nakedFlag= 1;
+	  break;
+
+	case 'j':
+	  pegjsFlag= 1;
 	  break;
 
 	default:
@@ -342,10 +348,13 @@ int main(int argc, char **argv)
   if (pegFlag)
     PEG_print(nakedFlag);
 
+  if (pegjsFlag)
+    PEGJS_print(nakedFlag);
+
   if (nakedFlag)
     LEG_print(nakedFlag);
 
-  if(ebnfFlag || pegFlag || nakedFlag)
+  if(ebnfFlag || pegFlag || nakedFlag || pegjsFlag)
     return 0;
 
   Rule_compile_c_header();

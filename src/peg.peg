@@ -48,7 +48,7 @@ Primary		<- AT? (
                         / LiteralDQ		{ push(makeString(yytext, '"')); }
                         / LiteralBQ		{ push(makeString(yytext, '`')); }
                         )
-                    (!Spacing 'i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
+                    ('i' !IdentStart  { setTopStrCharCaseInsensitive(); })? Spacing
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
 		 / Action			{ push(makeAction(0, yytext)); }	#ikp added
@@ -60,9 +60,9 @@ Primary		<- AT? (
 Identifier	<- < IdentStart IdentCont* > Spacing		#ikp inserted < ... >
 IdentStart	<- [a-zA-Z_]
 IdentCont	<- IdentStart / [0-9]
-LiteralSQ	<- ['] < (!['] Char )* > ['] Spacing		#ikp inserted < ... >
-LiteralDQ	<- ["] < (!["] Char )* > ["] Spacing		#ikp inserted < ... >
-LiteralBQ	<- [`] < (![`] Char )* > [`] Spacing		#ikp inserted < ... >
+LiteralSQ	<- ['] < (!['] Char )* > [']		#ikp inserted < ... >
+LiteralDQ	<- ["] < (!["] Char )* > ["]		#ikp inserted < ... >
+LiteralBQ	<- [`] < (![`] Char )* > [`]		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
@@ -72,7 +72,7 @@ Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
 		 / '\\' [0-7][0-7]?
 		 / '\\' '-'					#ikp added
 		 / !'\\' .
-LEFTARROW	<- ('<--' / '<-|' / '<-' / '<==') Spacing
+LEFTARROW	<- '<-' Spacing
 SLASH		<- '/' Spacing
 AND		<- '&' Spacing
 NOT		<- '!' Spacing

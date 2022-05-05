@@ -439,13 +439,17 @@ void EBNF_print() {
   fprintf(stdout, "\n//Added tokens for railroad generation\n_NOT_ ::= '!'\n_AND_ ::= '&'\n\n");
 }
 
-static void RuleLegPeg_fprint(FILE *stream, Node *node, int asLeg, int naked)
+typedef enum {asLeg, asPeg, asPegjs} eLegPegJs;
+
+static void RuleLegPegJs_fprint(FILE *stream, Node *node, eLegPegJs outType, int naked)
 {
   assert(node);
   assert(Rule == node->type);
-  fprintf(stream, "%s %s", node->rule.name, asLeg ? "=\n\t" : "<-\n\t");
+  fprintf(stream, "%s %s", node->rule.name,
+          (outType == asLeg) || (outType == asPegjs) ? "=\n\t" : "<-\n\t");
   if (node->rule.expression)
-    Node_fprint(stream, node->rule.expression, 0, 0, asLeg, naked);
+    Node_fprint(stream, node->rule.expression, 0, 0,
+            (outType == asPegjs) ? 0 : (outType == asLeg), naked);
   else
     fprintf(stream, " UNDEFINED");
   if(asLeg) fprintf(stream, "\n\t;\n\n");
@@ -456,7 +460,7 @@ void LEG_print(int naked) {
     int i;
     Node **oderedRules = getOrderedRules();
     for(i=ruleCount-1; i >= 0; --i)
-        RuleLegPeg_fprint(stdout, oderedRules[i], 1, naked);
+        RuleLegPegJs_fprint(stdout, oderedRules[i], asLeg, naked);
     free(oderedRules);
 }
 
@@ -464,6 +468,14 @@ void PEG_print(int naked) {
     int i;
     Node **oderedRules = getOrderedRules();
     for(i=ruleCount-1; i >= 0; --i)
-        RuleLegPeg_fprint(stdout, oderedRules[i], 0, naked);
+        RuleLegPegJs_fprint(stdout, oderedRules[i], asPeg, naked);
+    free(oderedRules);
+}
+
+void PEGJS_print(int naked) {
+    int i;
+    Node **oderedRules = getOrderedRules();
+    for(i=ruleCount-1; i >= 0; --i)
+        RuleLegPegJs_fprint(stdout, oderedRules[i], asPegjs, naked);
     free(oderedRules);
 }

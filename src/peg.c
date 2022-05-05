@@ -32,6 +32,7 @@ int   verboseFlag= 0;
 int   ebnfFlag= 0;
 int   nakedFlag= 0;
 int   legFlag= 0;
+int   pegjsFlag= 0;
 int   nolinesFlag= 0;
 
 static int   lineNumber= 0;
@@ -99,6 +100,7 @@ static void usage(char *name)
   fprintf(stderr, "  -P          do not generate #line directives\n");
   fprintf(stderr, "  -n          output naked\n");
   fprintf(stderr, "  -l          output leg format\n");
+  fprintf(stderr, "  -j          output pegjs/peggy format\n");
   fprintf(stderr, "  -e          output EBNF\n");
   fprintf(stderr, "  -v          be verbose\n");
   fprintf(stderr, "  -V          print version number and exit\n");
@@ -117,7 +119,7 @@ int main(int argc, char **argv)
   lineNumber= 1;
   fileName= "<stdin>";
 
-  while (-1 != (c= getopt(argc, argv, "PVho:veln")))
+  while (-1 != (c= getopt(argc, argv, "PVho:velnj")))
     {
       switch (c)
 	{
@@ -155,6 +157,10 @@ int main(int argc, char **argv)
 
 	case 'n':
 	  nakedFlag= 1;
+	  break;
+
+	case 'j':
+	  pegjsFlag= 1;
 	  break;
 
 	default:
@@ -204,10 +210,13 @@ int main(int argc, char **argv)
   if (legFlag)
     LEG_print(nakedFlag);
 
+  if (pegjsFlag)
+    PEGJS_print(nakedFlag);
+
   if (nakedFlag)
     PEG_print(nakedFlag);
 
-  if(ebnfFlag || legFlag || nakedFlag)
+  if(ebnfFlag || legFlag || nakedFlag || pegjsFlag)
     return 0;
 
   Rule_compile_c_header();

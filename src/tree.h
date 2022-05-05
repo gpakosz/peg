@@ -116,3 +116,4 @@ extern void  Rule_print(Node *node);
 extern void  EBNF_print();
 extern void  LEG_print(int naked);
 extern void  PEG_print(int naked);
+extern void  PEGJS_print(int naked);
