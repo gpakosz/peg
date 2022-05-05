@@ -120,7 +120,7 @@ primary=	identifier				{ push(makeVariable(yytext)); }
                     literalSQ				{ push(makeString(yytext, '\'')); }
                     | literalDQ			{ push(makeString(yytext, '"')); }
                     | literalBQ			{ push(makeString(yytext, '`')); }
-                ) ('i' ![-a-zA-Z_] -			{ setTopStrCharCaseInsensitive(); })?
+                ) (!- 'i' ![-a-zA-Z_] -			{ setTopStrCharCaseInsensitive(); })?
 |		class					{ push(makeClass(yytext)); }
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }

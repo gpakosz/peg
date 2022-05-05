@@ -48,7 +48,7 @@ Primary		<- AT? (
                         / LiteralDQ		{ push(makeString(yytext, '"')); }
                         / LiteralBQ		{ push(makeString(yytext, '`')); }
                         )
-                    ('i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
+                    (!Spacing 'i' !IdentStart Spacing  { setTopStrCharCaseInsensitive(); })?
 		 / Class			{ push(makeClass(yytext)); }
 		 / DOT				{ push(makeDot()); }
 		 / Action			{ push(makeAction(0, yytext)); }	#ikp added
