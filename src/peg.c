@@ -213,11 +213,13 @@ int main(int argc, char **argv)
   if (pegjsFlag)
     PEGJS_print(nakedFlag);
 
-  if (nakedFlag)
-    PEG_print(nakedFlag);
-
-  if(ebnfFlag || legFlag || nakedFlag || pegjsFlag)
+  if(ebnfFlag || legFlag || pegjsFlag)
     return 0;
+
+  if (nakedFlag) {
+    PEG_print(nakedFlag);
+    return 0;
+  }
 
   Rule_compile_c_header();
   if (rules) Rule_compile_c(rules, nolinesFlag);
