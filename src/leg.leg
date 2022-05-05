@@ -154,8 +154,8 @@ braces=		'{' braces* '}'
 | literalBraces
 |		!'}' ( end-of-line | . )
 
-literalBraces=	['] ( !['] char )* [']
-|		["] ( !["] char )* ["]
+literalBraces=	['] ( !(['] | end-of-line) char )* [']
+|		["] ( !(["] | end-of-line) char )* ["]
 
 EQUAL=		'=' -
 COLON=		':' -

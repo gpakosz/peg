@@ -95,8 +95,8 @@ Action		<- '{' < Braces* > '}' Spacing		#ikp added
 Braces      <-	'{' Braces* '}'
 	/ LiteralBraces
 	/ !'}' (EndOfLine / . )
-LiteralBraces	<- ['] (!['] Char )* [']
-		 / ["] (!["] Char )* ["]
+LiteralBraces	<- ['] (!([']/EndOfLine) Char )* [']
+		 / ["] (!(["]/EndOfLine) Char )* ["]
 
 BEGIN		<- '<' Spacing				#ikp added
 END		<- '>' Spacing				#ikp added
