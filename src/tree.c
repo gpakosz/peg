@@ -341,8 +341,9 @@ static void Node_fprint(FILE *stream, Node *node, int depth, int asEbnf, int asL
                         break;
     case Dot:		fprintf(stream, " .");							break;
     case Character:	fprintf(stream, " '%s'", node->character.value);			break;
-    case String:	fprintf(stream, " %c%s%c", node->string.quote,
-                            node->string.value, node->string.quote);				break;
+    case String:	fprintf(stream, " %c%s%c%s", node->string.quote,
+                            node->string.value, node->string.quote,
+                            node->string.caseInsensitive && !asEbnf ? "i" : "");		break;
     case Class:		fprintf(stream, " [%s]", node->cclass.value);				break;
     case Action:	if(!naked) fprintf(stream, " { %s }", node->action.text);		break;
     case Predicate:	if(!naked) {
