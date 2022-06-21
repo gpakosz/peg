@@ -149,6 +149,17 @@ void setTopStrCharCaseInsensitive()
   }
 }
 
+void setTopClassCharCaseInsensitive()
+{
+  Node *node= top();
+  switch(node->type) {
+      case Class: node->cclass.caseInsensitive= 1; break;
+      default:
+      fprintf(stderr, "\ncan not set CaseInsensitive on node type %d\n", node->type);
+      exit(1);
+  }
+}
+
 Node *makeClass(char *text)
 {
   Node *node= newNode(Class);
@@ -344,7 +355,8 @@ static void Node_fprint(FILE *stream, Node *node, int depth, int asEbnf, int asL
     case String:	fprintf(stream, " %c%s%c%s", node->string.quote,
                             node->string.value, node->string.quote,
                             node->string.caseInsensitive && !asEbnf ? "i" : "");		break;
-    case Class:		fprintf(stream, " [%s]", node->cclass.value);				break;
+    case Class:		fprintf(stream, " [%s]%s", node->cclass.value,
+                            node->cclass.caseInsensitive && !asEbnf ? "i" : "");				break;
     case Action:	if(!naked) fprintf(stream, " { %s }", node->action.text);		break;
     case Predicate:	if(!naked) {
                             if(strcmp(node->predicate.text, "YY_BEGIN") == 0)

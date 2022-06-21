@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #ifdef WIN32
@@ -106,7 +107,7 @@ static const char *escapedChar(int ch)
     return NULL;
 }
 
-static char *makeCharClass(unsigned char *cclass)
+static char *makeCharClass(unsigned char *cclass, int caseInsensitive)
 {
   unsigned char	 bits[32];
   setter	 set;
@@ -138,6 +139,7 @@ static char *makeCharClass(unsigned char *cclass)
       else
 	{
 	  c= cnext(&cclass);
+          if(caseInsensitive) c = tolower(c);
 	  set(bits, prev= c);
 	}
     }
@@ -202,7 +204,9 @@ static void Node_compile_c_ko(Node *node, int ko)
       break;
 
     case Class:
-      fprintf(output, "  if (!yymatchClass(yy, (unsigned char *)\"%s\")) goto l%d;", makeCharClass(node->cclass.value), ko);
+      fprintf(output, "  if (!yymatchClass%s(yy, (unsigned char *)\"%s\")) goto l%d;",
+              node->cclass.caseInsensitive ? "CaseInsensitive" : "", 
+              makeCharClass(node->cclass.value, node->cclass.caseInsensitive), ko);
       break;
 
     case Action:
@@ -689,6 +693,21 @@ YY_LOCAL(int) yymatchClass(yycontext *yy, unsigned char *bits)\n\
       return 1;\n\
     }\n\
   yyprintf((stderr, \"  fail yymatchClass @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  return 0;\n\
+}\n\
+\n\
+YY_LOCAL(int) yymatchClassCaseInsensitive(yycontext *yy, unsigned char *bits)\n\
+{\n\
+  int c;\n\
+  if (yy->__pos >= yy->__limit && !yyrefill(yy)) return 0;\n\
+  c= tolower((unsigned char)yy->__buf[yy->__pos]);\n\
+  if (bits[c >> 3] & (1 << (c & 7)))\n\
+    {\n\
+      ++yy->__pos;\n\
+      yyprintf((stderr, \"  ok   yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      return 1;\n\
+    }\n\
+  yyprintf((stderr, \"  fail yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\

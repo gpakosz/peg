@@ -50,6 +50,7 @@ Primary		<- AT? (
                         )
                     ('i' !IdentStart  { setTopStrCharCaseInsensitive(); })? Spacing
 		 / Class			{ push(makeClass(yytext)); }
+                     ('i' !IdentStart  { setTopClassCharCaseInsensitive(); })? Spacing
 		 / DOT				{ push(makeDot()); }
 		 / Action			{ push(makeAction(0, yytext)); }	#ikp added
 		 / BEGIN			{ push(makePredicate("YY_BEGIN")); }	#ikp added
@@ -63,11 +64,10 @@ IdentCont	<- IdentStart / [0-9]
 LiteralSQ	<- ['] < (!['] Char )* > [']		#ikp inserted < ... >
 LiteralDQ	<- ["] < (!["] Char )* > ["]		#ikp inserted < ... >
 LiteralBQ	<- [`] < (![`] Char )* > [`]		#ikp inserted < ... >
-Class		<- '[' < (!']' Range)* > ']' Spacing		#ikp inserted < ... >
+Class		<- '[' < (!']' Range)* > ']'		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
-		/ '\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]
-		/ '\\' 'x'[0-9A-Fa-f]
+		/ '\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]?
 		 / '\\' [0-3][0-7][0-7]
 		 / '\\' [0-7][0-7]?
 		 / '\\' '-'					#ikp added

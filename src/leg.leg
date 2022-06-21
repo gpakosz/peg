@@ -123,6 +123,7 @@ primary=	identifier				{ push(makeVariable(yytext)); }
                     | literalBQ			{ push(makeString(yytext, '`')); }
                 ) ('i' ![-a-zA-Z_]		{ setTopStrCharCaseInsensitive(); })? -
 |		class					{ push(makeClass(yytext)); }
+                    ('i' ![-a-zA-Z_]		{ setTopClassCharCaseInsensitive(); })? -
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }
 |		BEGIN					{ push(makePredicate("YY_BEGIN")); }
@@ -136,13 +137,12 @@ literalSQ=	['] < ( !['] char )* > [']
 literalDQ=	["] < ( !["] char )* > ["]
 literalBQ=	[`] < ( ![`] char )* > [`]
 
-class=		'[' < ( !']' range )* > ']' -
+class=		'[' < ( !']' range )* > ']'
 
 range=		char '-' ! ']' char | char
 
 char=		'\\' [-abefnrtv'"\[\]\\]
-|		'\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]
-|		'\\' 'x'[0-9A-Fa-f]
+|		'\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]?
 |		'\\' [0-3][0-7][0-7]
 |		'\\' [0-7][0-7]?
 |		!'\\' .

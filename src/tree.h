@@ -32,8 +32,8 @@ struct Variable	 { NodeType type;  Node *next;   char *name;  Node *value;  int 
 struct Name	 { NodeType type;  Node *next;   Node *rule;  Node *variable;						};
 struct Dot	 { NodeType type;  Node *next;										};
 struct Character { NodeType type;  Node *next;   char *value; char caseInsensitive; char quote;         		};
-struct String	 { NodeType type;  Node *next;   char *value;  char caseInsensitive; char quote;			};
-struct Class	 { NodeType type;  Node *next;   unsigned char *value;							};
+struct String	 { NodeType type;  Node *next;   char *value; char caseInsensitive; char quote;			};
+struct Class	 { NodeType type;  Node *next;   unsigned char *value; char caseInsensitive;					};
 struct Action	 { NodeType type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
 struct Inline    { NodeType type;  Node *next;   char *text;									};
 struct Predicate { NodeType type;  Node *next;   char *text;									};
@@ -90,6 +90,7 @@ extern Node *makeDot(void);
 extern Node *makeCharacter(char *text);
 extern Node *makeString(char *text, int quote);
 extern void  setTopStrCharCaseInsensitive();
+extern void  setTopClassCharCaseInsensitive();
 extern Node *makeClass(char *text);
 extern Node *makeAction(int lineNumber, char *text);
 extern Node *makeInline(char *text);
