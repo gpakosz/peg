@@ -410,6 +410,7 @@ static void Rule_compile_c2(Node *node)
 	fprintf(output, "  yyDo(yy, yyPush, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  yyprintf((stderr, \"%%s\\n\", \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
+      fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_succeed_count[%d];\n#endif", node->rule.id);      
       fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
@@ -418,6 +419,7 @@ static void Rule_compile_c2(Node *node)
 	{
 	  label(ko);
 	  restore(0);
+	  fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_fail_count[%d];\n#endif", node->rule.id);      
 	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
 	  fprintf(output, "\n  return 0;");
 	}
@@ -519,6 +521,10 @@ struct _yycontext {\n\
 #endif\n\
 #ifdef YY_CTX_MEMBERS\n\
   YY_CTX_MEMBERS\n\
+#endif\n\
+#ifdef YY_RULES_PROFILE\n\
+  int       __rules_succeed_count[YYRULECOUNT+1];\n\
+  int       __rules_fail_count[YYRULECOUNT+1];\n\
 #endif\n\
 };\n\
 \n\
@@ -851,6 +857,29 @@ YY_PARSE(yycontext *) YYRELEASE(yycontext *yyctx)\n\
     }\n\
   return yyctx;\n\
 }\n\
+#ifdef YY_RULES_PROFILE\n\
+\n\
+YY_PARSE(int) yyShowRulesProfile(yycontext *yy, FILE *fp)\n\
+{\n\
+  int itotal_def_count = 0, itotal_def_succ_count = 0, itotal_def_fail_count = 0;\n\
+  for(int i=1; i <= YYRULECOUNT; ++i) {\n\
+    itotal_def_succ_count += yy->__rules_succeed_count[i];\n\
+    itotal_def_fail_count += yy->__rules_fail_count[i];\n\
+  }\n\
+  itotal_def_count += itotal_def_succ_count + itotal_def_fail_count;\n\
+  double dtotal_count = itotal_def_count;\n\
+  fprintf(fp, \"Total calls %%d,  calls per input byte %%.2f\\n\\n\", itotal_def_count, (itotal_def_count/(yy->__inputpos*1.0)));\n\
+  fprintf(fp, \"%%4s  %%10s  %%5s  %%10s  %%10s  %%s\\n\", \"id\", \"total\", \"%\", \"success\", \"fail\", \"definition\");\n\
+  fprintf(fp, \"\\n%%4s  %%10.d  %%5s  %%10.d  %%10.d  Total counters\", \"\", itotal_def_count, \"\", itotal_def_succ_count, itotal_def_fail_count);\n\
+  fprintf(fp, \"\\n%%4s  %%12s  %%5s  %%8.2f  %%10.2f  %%%% success/fail\\n\\n\", \"\", \"\", \"\", (itotal_def_succ_count/dtotal_count)*100.0, (itotal_def_fail_count/dtotal_count)*100.0);\n\
+  for(int i=1; i <= YYRULECOUNT; ++i) {\n\
+    int def_count = yy->__rules_succeed_count[i] + yy->__rules_fail_count[i];\n\
+    fprintf(fp, \"%%4.d  %%10.d  %%5.2f  %%10.d  %%10.d  %%s\\n\", i, def_count, (def_count/dtotal_count)*100.0,\n\
+	    yy->__rules_succeed_count[i], yy->__rules_fail_count[i], yyrulenames[i]);\n\
+  }\n\
+  return 0;\n\
+}\n\
+#endif\n\
 \n\
 #endif\n\
 ";
@@ -929,6 +958,8 @@ int consumesInput(Node *node)
 void Rule_compile_c(Node *node, int nolines)
 {
   Node *n;
+  struct Rule **rules_list;
+  int idx;
 
   for (n= rules;  n;  n= n->rule.next)
     consumesInput(n);
@@ -937,6 +968,19 @@ void Rule_compile_c(Node *node, int nolines)
   for (n= node;  n;  n= n->rule.next)
     fprintf(output, "YY_RULE(int) yy_%s(yycontext *yy); /* %d */\n", n->rule.name, n->rule.id);
   fprintf(output, "\n");
+
+  fprintf(output, "#ifdef YY_RULES_PROFILE\nstatic const char *yyrulenames[YYRULECOUNT+1] = {\nNULL,\n");
+  rules_list = calloc(ruleCount, sizeof(struct Rule*));
+  idx = -1;
+  for (n= node;  n;  n= n->rule.next)
+    rules_list[++idx] = &n->rule;
+  while (idx >= 0) {
+      struct Rule *r = rules_list[idx--];
+    fprintf(output, "\"%s\", /* %d */\n", r->name, r->id);
+  }
+  fprintf(output, "\n};\n#endif\n");
+  free(rules_list);
+
   for (n= actions;  n;  n= n->action.list)
     {
       fprintf(output, "YY_ACTION(void) yy%s(yycontext *yy, char *yytext, int yyleng)\n{\n", n->action.name);
