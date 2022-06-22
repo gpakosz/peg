@@ -69,7 +69,8 @@ declaration=	'%{'					{ headerLine= lineNumber; }
 trailer=	'%%'					{ headerLine= lineNumber }
 		< .* >					{ trailer = makeTrailer(headerLine, yytext); }			#{YYACCEPT}
 
-definition=	identifier 				{ if (push(beginRule(findRule(yytext)))->rule.expression)
+definition=						{ headerLine= lineNumber }
+                identifier 				{ if (push(beginRule(findRule(yytext), headerLine))->rule.expression)
 							    fprintf(stderr, "rule '%s' redefined\n", yytext); }
 			EQUAL expression		{ Node *e= pop();  Rule_setExpression(pop(), e); }
 			SEMICOLON?											#{YYACCEPT}

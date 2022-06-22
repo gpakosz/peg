@@ -25,7 +25,9 @@ Declaration     <- '%{'				{ headerLine= lineNumber; }
 Trailer         <- '%%'				{ headerLine= lineNumber }
 		< .* >				{ trailer = makeTrailer(headerLine, yytext); }			#{YYACCEPT}
 
-Definition	<- Identifier 			{ if (push(beginRule(findRule(yytext)))->rule.expression) fprintf(stderr, "rule '%s' redefined\n", yytext); }
+Definition	<-				{ headerLine= lineNumber }
+                    Identifier 			{ if (push(beginRule(findRule(yytext), headerLine))->rule.expression)
+                                                    fprintf(stderr, "rule '%s' redefined\n", yytext); }
 		     LEFTARROW Expression	{ Node *e= pop();  Rule_setExpression(pop(), e); }              #{YYACCEPT}
 Expression	<- Sequence (SLASH Sequence	{ Node *f= pop();  push(Alternate_append(pop(), f)); }
 			    )*

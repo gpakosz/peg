@@ -27,14 +27,14 @@ enum {
 
 typedef union Node Node;
 
-struct Rule	 { NodeType type;  Node *next;   char *name;	 Node *variables;  Node *expression;  int id;  int flags;	};
+struct Rule	 { NodeType type;  Node *next;   char *name;  Node *variables;  Node *expression;  int id;  int flags;	int line; };
 struct Variable	 { NodeType type;  Node *next;   char *name;  Node *value;  int offset;					};
 struct Name	 { NodeType type;  Node *next;   Node *rule;  Node *variable;						};
 struct Dot	 { NodeType type;  Node *next;										};
 struct Character { NodeType type;  Node *next;   char *value; char caseInsensitive; char quote;         		};
 struct String	 { NodeType type;  Node *next;   char *value; char caseInsensitive; char quote;			};
 struct Class	 { NodeType type;  Node *next;   unsigned char *value; char caseInsensitive;					};
-struct Action	 { NodeType type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
+struct Action	 { NodeType type;  Node *next;   char *text;  Node *list;  char *name;  Node *rule;  int line;		};
 struct Inline    { NodeType type;  Node *next;   char *text;									};
 struct Predicate { NodeType type;  Node *next;   char *text;									};
 struct Error	 { NodeType type;  Node *next;   Node *element;  char *text;							};
@@ -81,7 +81,7 @@ extern FILE *output;
 
 extern Node *makeRule(char *name);
 extern Node *findRule(char *name);
-extern Node *beginRule(Node *rule);
+extern Node *beginRule(Node *rule, int line);
 extern void  Rule_setExpression(Node *rule, Node *expression);
 extern Node *Rule_beToken(Node *rule);
 extern Node *makeVariable(char *name);

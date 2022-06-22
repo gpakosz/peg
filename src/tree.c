@@ -73,9 +73,11 @@ Node *findRule(char *name)
   return makeRule(name);
 }
 
-Node *beginRule(Node *rule)
+Node *beginRule(Node *rule, int line)
 {
   actionCount= 0;
+  if(!rule->rule.line)
+    rule->rule.line = line;
   return thisRule= rule;
 }
 
@@ -432,6 +434,10 @@ static void EBNF_fprint(FILE *stream, Node *node)
   fprintf(stream, "\n\n");
 }
 
+static int cmpRulesByLine(const void* r1, const void*r2) {
+    return (*(Node * const *)r2)->rule.line - (*(Node * const *)r1)->rule.line;
+}
+
 static Node **getOrderedRules()
 {
   int i;
@@ -439,6 +445,7 @@ static Node **getOrderedRules()
   Node **oderedRules = calloc(1, sizeof(Node*)*ruleCount);
   for (i=0, n= rules;  n;  n= n->any.next, ++i)
     oderedRules[i] = n;
+  qsort(oderedRules, ruleCount, sizeof(Node*), cmpRulesByLine);
   return oderedRules;
 }
 
