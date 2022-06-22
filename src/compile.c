@@ -555,20 +555,11 @@ YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
 #define YY_CTX_PARAM	yycontext *yyctx\n\
 #define YY_CTX_ARG_	yyctx,\n\
 #define YY_CTX_ARG	yyctx\n\
-#ifndef YY_ENDLINE_CHAR\n\
-#define YY_ENDLINE_CHAR	'\\n'\n\
-#endif\n\
 #ifndef YY_INPUT\n\
 #define YY_INPUT(yy, buf, result, max_size)		\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF != yyc);                       	\\\n\
-    if(result) {                                	\\\n\
-      *(buf)= yyc;                              	\\\n\
-      if (YY_ENDLINE_CHAR == yyc)       		\\\n\
-        {++yy->__lineno;yy->__linenopos=yy->__inputpos;}\\\n\
-      ++yy->__inputpos;	                		\\\n\
-    }                                           	\\\n\
+    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
     yyprintf((stderr, \"<%s>\", yyescapedChar(yy, yyc)));\\\n\
   }\n\
 #endif\n\
@@ -583,13 +574,7 @@ yycontext *yyctx= &_yyctx;\n\
 #define YY_INPUT(buf, result, max_size)			\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF != yyc);                       	\\\n\
-    if(result) {                                	\\\n\
-      *(buf)= yyc;                              	\\\n\
-      if (YY_ENDLINE_CHAR == yyc)       		\\\n\
-        {++yyctx->__lineno;yyctx->__linenopos=yyctx->__inputpos;}\\\n\
-      ++yyctx->__inputpos;	                		\\\n\
-    }                                           	\\\n\
+    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
     yyprintf((stderr, \"<%s>\", yyescapedChar(yyctx, yyc)));\\\n\
   }\n\
 #endif\n\
