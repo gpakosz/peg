@@ -49,7 +49,7 @@ void yyerror(char *message);
 #define YY_INPUT(buf, result, max)			\
 {							\
   int c= getc(input);					\
-  result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
+  result= (EOF == c) ? 0 : (*(buf)= c, ++inputPos, 1); \
 }
 
 #define YY_LOCAL(T)	static T

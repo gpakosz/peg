@@ -37,6 +37,7 @@ Sequence	<- error (error		{ Node *f= pop();  push(Sequence_append(pop(), f)); }	
 error <-	Prefix  (TILDE Action			{ push(makeError(pop(), yytext)); }
 			)?
 
+                # An attempt to move NOT Suffix as first option result in failure
 Prefix		<- AT  Action			{ push(makeInline(yytext)); }
 		 / AND Action			{ push(makePredicate(yytext)); }	#ikp added
 		 / AND Suffix			{ push(makePeekFor(pop())); }		#ikp expanded from 'Prefix <- (AND/NOT)? Suffix'
@@ -46,9 +47,11 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			     / STAR		{ push(makeStar (pop())); }
 			     / PLUS		{ push(makePlus (pop())); }
 			   )?
-Primary		<- Identifier			{ push(makeVariable(yytext)); }
-			COLON Identifier !LEFTARROW	{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
-                 / Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
+Primary		<- Identifier (
+                        COLON			{ push(makeVariable(yytext)); }
+			 Identifier !LEFTARROW	{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
+                        / !LEFTARROW            { push(makeName(findRule(yytext))); }
+                        )
 		 / OPEN Expression CLOSE ~{yyerror("missing expected `)`");}
 		 / (
                         LiteralSQ		{ push(makeString(yytext, '\'')); }
@@ -70,11 +73,12 @@ LiteralSQ	<- ['] < (!['] Char )* > [']		#ikp inserted < ... >
 LiteralDQ	<- ["] < (!["] Char )* > ["]		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']'		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
-Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
-		/ '\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]?
-		 / '\\' [0-3][0-7][0-7]
-		 / '\\' [0-7][0-7]?
-		 / '\\' '-'					#ikp added
+Char		<- '\\' (
+                    [-abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
+                    / 'x'[0-9A-Fa-f][0-9A-Fa-f]?
+                    / [0-3][0-7][0-7]
+                    / [0-7][0-7]?
+                    )
 		 / !'\\' .
 LEFTARROW	<- '<-' Spacing
 SLASH		<- '/' Spacing
@@ -89,10 +93,10 @@ DOT		<- '.' Spacing
 TILDE		<- '~' Spacing
 COLON		<- ':' Spacing
 AT		<- '@' Spacing
-Spacing		<- (Space / Comment)*
+Spacing		<- (Space+ / Comment)*
 Comment		<- '#' (!EndOfLine .)* EndOfLine
 Space		<- ' ' / '\t' / EndOfLine
-EndOfLine	<- ( '\r\n' / '\n' / '\r' )         { ++lineNumber; }
+EndOfLine	<- ( '\n' '\r'? / '\r' '\n'? )         { ++lineNumber; lineNumberPos=inputPos; }
 EndOfFile	<- !.
 
 Action		<- '{'                              { actionLine= lineNumber; }

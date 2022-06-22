@@ -51,7 +51,7 @@
 # define YY_INPUT(buf, result, max)			\
   {							\
     int c= getc(input);					\
-    result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
+    result= (EOF == c) ? 0 : (*(buf)= c, ++inputPos, 1); \
   }
 
 # define YY_LOCAL(T)	static T
@@ -84,6 +84,7 @@ sequence=	error   (error				{ Node *f= pop();  push(Sequence_append(pop(), f)); 
 error=		prefix  (TILDE action			{ push(makeError(pop(), yytext)); }
 			)?
 
+                # An attempt to move NOT Suffix as first option result in failure
 prefix=		AT  action				{ push(makeInline(yytext)); }
 |		AND action				{ push(makePredicate(yytext)); }
 |		AND suffix				{ push(makePeekFor(pop())); }
@@ -95,9 +96,11 @@ suffix=		primary (QUESTION			{ push(makeQuery(pop())); }
 			     | PLUS			{ push(makePlus (pop())); }
 			   )?
 
-primary=	identifier				{ push(makeVariable(yytext)); }
-			COLON identifier !EQUAL		{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
-|		identifier !EQUAL			{ push(makeName(findRule(yytext))); }
+primary=	identifier (
+                         COLON				{ push(makeVariable(yytext)); }
+			 identifier !EQUAL		{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
+                        | !EQUAL        		{ push(makeName(findRule(yytext))); }
+                    )
 |		OPEN expression CLOSE ~{yyerror("missing expected `)`");}
 |		(
                     literalSQ				{ push(makeString(yytext, '\'')); }
@@ -122,10 +125,12 @@ class=		'[' < ( !']' range )* > ']'
 
 range=		char '-' ! ']' char | char
 
-char=		'\\' [-abefnrtv'"\[\]\\]
-|		'\\' 'x'[0-9A-Fa-f][0-9A-Fa-f]?
-|		'\\' [0-3][0-7][0-7]
-|		'\\' [0-7][0-7]?
+char=		'\\' (
+                    [-abefnrtv'"\[\]\\]
+                    | 'x'[0-9A-Fa-f][0-9A-Fa-f]?
+                    | [0-3][0-7][0-7]
+                    | [0-7][0-7]?
+                    )
 |		!'\\' .
 
 action=		'{'					{ actionLine= lineNumber; }
@@ -156,10 +161,10 @@ END=		'>' -
 TILDE=		'~' -
 RPERCENT=	'%}' -
 
--=		(space | comment)*
+-=		(space+ | comment)*
 space=		' ' | '\t' | end-of-line
 comment=	'#' (!end-of-line .)* end-of-line
-end-of-line=	( '\r\n' | '\n' | '\r' )		{ ++lineNumber }
+end-of-line=	( '\n' '\r'? | '\r' '\n'? )		{ ++lineNumber; lineNumberPos=inputPos; }
 end-of-file=	!.
 
 %%

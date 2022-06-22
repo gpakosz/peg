@@ -559,7 +559,7 @@ YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
 #define YY_INPUT(yy, buf, result, max_size)		\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
+    result= (EOF == yyc) ? 0 : (*(buf)= yyc, ++yy->__inputpos, 1); \\\n\
     yyprintf((stderr, \"<%s>\", yyescapedChar(yy, yyc)));\\\n\
   }\n\
 #endif\n\
@@ -574,7 +574,7 @@ yycontext *yyctx= &_yyctx;\n\
 #define YY_INPUT(buf, result, max_size)			\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, 1);	\\\n\
+    result= (EOF == yyc) ? 0 : (*(buf)= yyc, ++yyctx->__inputpos, 1); \\\n\
     yyprintf((stderr, \"<%s>\", yyescapedChar(yyctx, yyc)));\\\n\
   }\n\
 #endif\n\
