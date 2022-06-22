@@ -1,6 +1,6 @@
 /* Copyright (c) 2007--2013 by Ian Piumarta
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the 'Software'),
  * to deal in the Software without restriction, including without limitation
@@ -10,9 +10,9 @@
  * permission notice appear in all copies of the Software.  Acknowledgement
  * of the use of this Software in supporting documentation would be
  * appreciated but is not required.
- * 
+ *
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
- * 
+ *
  * Last edited: 2016-07-22 09:43:05 by piumarta on zora.local
  */
 
@@ -205,7 +205,7 @@ static void Node_compile_c_ko(Node *node, int ko)
 
     case Class:
       fprintf(output, "  if (!yymatchClass%s(yy, (unsigned char *)\"%s\")) goto l%d;",
-              node->cclass.caseInsensitive ? "CaseInsensitive" : "", 
+              node->cclass.caseInsensitive ? "CaseInsensitive" : "",
               makeCharClass(node->cclass.value, node->cclass.caseInsensitive), ko);
       break;
 
@@ -410,7 +410,7 @@ static void Rule_compile_c2(Node *node)
 	fprintf(output, "  yyDo(yy, yyPush, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  yyprintf((stderr, \"%%s\\n\", \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
-      fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_succeed_count[%d];\n#endif", node->rule.id);      
+      fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_succeed_count[%d];\n#endif", node->rule.id);
       fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
@@ -419,7 +419,7 @@ static void Rule_compile_c2(Node *node)
 	{
 	  label(ko);
 	  restore(0);
-	  fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_fail_count[%d];\n#endif", node->rule.id);      
+	  fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_fail_count[%d];\n#endif", node->rule.id);
 	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
 	  fprintf(output, "\n  return 0;");
 	}

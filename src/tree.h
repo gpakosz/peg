@@ -118,3 +118,18 @@ extern void  EBNF_print();
 extern void  LEG_print(int naked);
 extern void  PEG_print(int naked);
 extern void  PEGJS_print(int naked);
+
+typedef struct Header Header;
+struct Header {
+  int	    line;
+  char   *text;
+  Header *next;
+};
+
+typedef struct {
+  int	 trailerLine;
+  char	trailer[1];
+} Trailer;
+
+Header *makeHeader(Header *head, int line, char *text);
+Trailer *makeTrailer(int line, char *text);

@@ -28,14 +28,6 @@
 # include <libgen.h>
 # include <assert.h>
 
-  typedef struct Header Header;
-
-  struct Header {
-    int	    line;
-    char   *text;
-    Header *next;
-  };
-
   FILE *input= 0;
 
   int   verboseFlag= 0;
@@ -51,25 +43,14 @@
   static int	 headerLine= 0;
   static int	 actionLine= 0;
   static char	*fileName= 0;
-  static int	 trailerLine= 0;
-  static char	*trailer= 0;
+  static Trailer *trailer= 0;
   static Header	*headers= 0;
 
-  void makeHeader(int line, char *text);
-  void makeTrailer(int line, char *text);
-
   void yyerror(char *message);
-
-#define MYLINE_CHAR '\n'
 
 # define YY_INPUT(buf, result, max)			\
   {							\
     int c= getc(input);					\
-    if (MYLINE_CHAR == c) {                             \
-      ++lineNumber;                                     \
-      lineNumberPos=inputPos;                           \
-    }		                                        \
-    ++inputPos;                                         \
     result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
   }
 
@@ -83,10 +64,10 @@ grammar=	- ( declaration | definition )+ trailer? end-of-file
 
 declaration=	'%{'					{ headerLine= lineNumber; }
 		< ( !'%}' (end-of-line | .) )* >
-		RPERCENT				{ makeHeader(headerLine, yytext); }				#{YYACCEPT}
+		RPERCENT				{ headers = makeHeader(headers, headerLine, yytext); }		#{YYACCEPT}
 
 trailer=	'%%'					{ headerLine= lineNumber }
-		< .* >					{ makeTrailer(headerLine, yytext); }				#{YYACCEPT}
+		< .* >					{ trailer = makeTrailer(headerLine, yytext); }			#{YYACCEPT}
 
 definition=	identifier 				{ if (push(beginRule(findRule(yytext)))->rule.expression)
 							    fprintf(stderr, "rule '%s' redefined\n", yytext); }
@@ -120,10 +101,9 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 |		(
                     literalSQ				{ push(makeString(yytext, '\'')); }
                     | literalDQ			{ push(makeString(yytext, '"')); }
-                    | literalBQ			{ push(makeString(yytext, '`')); }
-                ) ('i' ![-a-zA-Z_]		{ setTopStrCharCaseInsensitive(); })? -
+                ) ('i' !identstart		{ setTopStrCharCaseInsensitive(); })? -
 |		class					{ push(makeClass(yytext)); }
-                    ('i' ![-a-zA-Z_]		{ setTopClassCharCaseInsensitive(); })? -
+                    ('i' !identstart		{ setTopClassCharCaseInsensitive(); })? -
 |		DOT					{ push(makeDot()); }
 |		action					{ push(makeAction(actionLine, yytext)); }
 |		BEGIN					{ push(makePredicate("YY_BEGIN")); }
@@ -131,11 +111,11 @@ primary=	identifier				{ push(makeVariable(yytext)); }
 
 # Lexical syntax
 
-identifier=	< [-a-zA-Z_][-a-zA-Z_0-9]* > -
+identifier=	< identstart[-a-zA-Z_0-9]* > -
+identstart=	[-a-zA-Z_]
 
 literalSQ=	['] < ( !['] char )* > [']
 literalDQ=	["] < ( !["] char )* > ["]
-literalBQ=	[`] < ( ![`] char )* > [`]
 
 class=		'[' < ( !']' range )* > ']'
 
@@ -147,7 +127,7 @@ char=		'\\' [-abefnrtv'"\[\]\\]
 |		'\\' [0-7][0-7]?
 |		!'\\' .
 
-action=		'{'					{ actionLine= lineNumber }
+action=		'{'					{ actionLine= lineNumber; }
 		< braces* > '}' -
 
 braces=		'{' braces* '}'
@@ -206,21 +186,6 @@ void yyerror(char *message)
     }
   fprintf(stderr, "\n");
   exit(1);
-}
-
-void makeHeader(int line, char *text)
-{
-  Header *header= (Header *)malloc(sizeof(Header));
-  header->line= line;
-  header->text= strdup(text);
-  header->next= headers;
-  headers= header;
-}
-
-void makeTrailer(int line, char *text)
-{
-  trailerLine= line;
-  trailer= strdup(text);
 }
 
 static void version(char *name)
@@ -361,16 +326,21 @@ int main(int argc, char **argv)
 
   Rule_compile_c_header();
 
-  for (; headers;  headers= headers->next)
+  for (; headers;) {
+    Header *tmp = headers;
     fprintf(output, "#line %i \"%s\"\n%s\n", headers->line, fileName, headers->text);
+    headers= headers->next;
+    free(tmp);
+  }
 
   if (rules)
     Rule_compile_c(rules, nolinesFlag);
 
   if (trailer) {
     if (!nolinesFlag)
-      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName);
-    fprintf(output, "%s\n", trailer);
+      fprintf(output, "#line %i \"%s\"\n", trailer->trailerLine, fileName);
+    fprintf(output, "%s\n", trailer->trailer);
+    free(trailer);
   }
 
   return 0;

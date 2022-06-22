@@ -38,20 +38,17 @@ int   nolinesFlag= 0;
 static int   lineNumber= 0;
 static int   inputPos= 0;
 static int   lineNumberPos= 0;
+static int   actionLine= 0;
 static char *fileName= 0;
+static int   headerLine= 0;
+static Trailer *trailer= 0;
+static Header  *headers= 0;
 
 void yyerror(char *message);
-
-#define MYLINE_CHAR '\n'
 
 #define YY_INPUT(buf, result, max)			\
 {							\
   int c= getc(input);					\
-  if (MYLINE_CHAR == c) {                               \
-    ++lineNumber;                                       \
-    lineNumberPos=inputPos;                             \
-  }		                                        \
-  ++inputPos;                                           \
   result= (EOF == c) ? 0 : (*(buf)= c, 1);		\
 }
 
@@ -222,7 +219,22 @@ int main(int argc, char **argv)
   }
 
   Rule_compile_c_header();
+
+  for (; headers;) {
+    Header *tmp = headers;
+    fprintf(output, "#line %i \"%s\"\n%s\n", headers->line, fileName, headers->text);
+    headers= headers->next;
+    free(tmp);
+  }
+
   if (rules) Rule_compile_c(rules, nolinesFlag);
+
+  if (trailer) {
+    if (!nolinesFlag)
+      fprintf(output, "#line %i \"%s\"\n", trailer->trailerLine, fileName);
+    fprintf(output, "%s\n", trailer->trailer);
+    free(trailer);
+  }
 
   return 0;
 }

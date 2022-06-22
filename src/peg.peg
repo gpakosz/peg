@@ -16,15 +16,22 @@
 
 # Hierarchical syntax
 
-Grammar		<- Spacing Definition+ EndOfFile
+Grammar		<- Spacing (Declaration / Definition)+ Trailer? EndOfFile
+
+Declaration     <- '%{'				{ headerLine= lineNumber; }
+		< ( !'%}' (EndOfLine / .) )* >
+		RPERCENT			{ headers = makeHeader(headers, headerLine, yytext); }		#{YYACCEPT}
+
+Trailer         <- '%%'				{ headerLine= lineNumber }
+		< .* >				{ trailer = makeTrailer(headerLine, yytext); }			#{YYACCEPT}
 
 Definition	<- Identifier 			{ if (push(beginRule(findRule(yytext)))->rule.expression) fprintf(stderr, "rule '%s' redefined\n", yytext); }
-		     LEFTARROW Expression	{ Node *e= pop();  Rule_setExpression(pop(), e); } &{ YYACCEPT }
+		     LEFTARROW Expression	{ Node *e= pop();  Rule_setExpression(pop(), e); }              #{YYACCEPT}
 Expression	<- Sequence (SLASH Sequence	{ Node *f= pop();  push(Alternate_append(pop(), f)); }
 			    )*
 Sequence	<- error (error		{ Node *f= pop();  push(Sequence_append(pop(), f)); }	#ikp expanded from 'Seq <- Prefix*'
 			  )*
-		 / 				{ push(makePredicate("1")); }				#ikp added
+
 error <-	Prefix  (TILDE Action			{ push(makeError(pop(), yytext)); }
 			)?
 
@@ -37,22 +44,18 @@ Suffix		<- Primary (QUESTION		{ push(makeQuery(pop())); }
 			     / STAR		{ push(makeStar (pop())); }
 			     / PLUS		{ push(makePlus (pop())); }
 			   )?
-Primary		<- AT? (
-                    Identifier			{ push(makeVariable(yytext)); }
+Primary		<- Identifier			{ push(makeVariable(yytext)); }
 			COLON Identifier !LEFTARROW	{ Node *name= makeName(findRule(yytext));  name->name.variable= pop();  push(name); }
-                    / Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
-                    )
+                 / Identifier !LEFTARROW	{ push(makeName(findRule(yytext))); }
 		 / OPEN Expression CLOSE ~{yyerror("missing expected `)`");}
-		 / AT? (
+		 / (
                         LiteralSQ		{ push(makeString(yytext, '\'')); }
                         / LiteralDQ		{ push(makeString(yytext, '"')); }
-                        / LiteralBQ		{ push(makeString(yytext, '`')); }
-                        )
-                    ('i' !IdentStart  { setTopStrCharCaseInsensitive(); })? Spacing
+                    ) ('i' !IdentStart  { setTopStrCharCaseInsensitive(); })? Spacing
 		 / Class			{ push(makeClass(yytext)); }
                      ('i' !IdentStart  { setTopClassCharCaseInsensitive(); })? Spacing
 		 / DOT				{ push(makeDot()); }
-		 / Action			{ push(makeAction(0, yytext)); }	#ikp added
+		 / Action			{ push(makeAction(actionLine, yytext)); }	#ikp added
 		 / BEGIN			{ push(makePredicate("YY_BEGIN")); }	#ikp added
 		 / END				{ push(makePredicate("YY_END")); }	#ikp added
 
@@ -63,7 +66,6 @@ IdentStart	<- [a-zA-Z_]
 IdentCont	<- IdentStart / [0-9]
 LiteralSQ	<- ['] < (!['] Char )* > [']		#ikp inserted < ... >
 LiteralDQ	<- ["] < (!["] Char )* > ["]		#ikp inserted < ... >
-LiteralBQ	<- [`] < (![`] Char )* > [`]		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']'		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' [abefnrtv'"\[\]\\]			#ikp added missing ANSI escapes: abefv
@@ -88,10 +90,11 @@ AT		<- '@' Spacing
 Spacing		<- (Space / Comment)*
 Comment		<- '#' (!EndOfLine .)* EndOfLine
 Space		<- ' ' / '\t' / EndOfLine
-EndOfLine	<- '\r\n' / '\n' / '\r'
+EndOfLine	<- ( '\r\n' / '\n' / '\r' )         { ++lineNumber; }
 EndOfFile	<- !.
 
-Action		<- '{' < Braces* > '}' Spacing		#ikp added
+Action		<- '{'                              { actionLine= lineNumber; }
+                    < Braces* > '}' Spacing		#ikp added
 Braces      <-	'{' Braces* '}'
 	/ LiteralBraces
 	/ !'}' (EndOfLine / . )
@@ -100,3 +103,4 @@ LiteralBraces	<- ['] (!([']/EndOfLine) Char )* [']
 
 BEGIN		<- '<' Spacing				#ikp added
 END		<- '>' Spacing				#ikp added
+RPERCENT        <- '%}' Spacing

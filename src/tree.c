@@ -364,7 +364,7 @@ static void Node_fprint(FILE *stream, Node *node, int depth, int asEbnf, int asL
                             else if(strcmp(node->predicate.text, "YY_END") == 0)
                                 fprintf(stream, " >");
                             else
-                                fprintf(stream, " ?{ %s }", node->predicate.text);
+                                fprintf(stream, " &{ %s }", node->predicate.text);
                         }
                         break;
     case Error: 	if(node->error.element)
@@ -491,4 +491,21 @@ void PEGJS_print(int naked) {
     for(i=ruleCount-1; i >= 0; --i)
         RuleLegPegJs_fprint(stdout, oderedRules[i], asPegjs, naked);
     free(oderedRules);
+}
+
+Header *makeHeader(Header *head, int line, char *text)
+{
+  Header *header= (Header *)malloc(sizeof(Header));
+  header->line= line;
+  header->text= strdup(text);
+  header->next= head;
+  return header;
+}
+
+Trailer * makeTrailer(int line, char *text)
+{
+  Trailer *trailer = (Trailer *)malloc(sizeof(Trailer)+strlen(text)+1);
+  trailer->trailerLine= line;
+  strcpy(trailer->trailer, text);
+  return trailer;
 }
