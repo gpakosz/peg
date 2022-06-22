@@ -43,6 +43,7 @@
   static int	 headerLine= 0;
   static int	 actionLine= 0;
   static char	*fileName= 0;
+  static char	*outfileName= 0;
   static Trailer *trailer= 0;
   static Header	*headers= 0;
 
@@ -163,7 +164,11 @@ RPERCENT=	'%}' -
 
 -=		(space+ | comment)*
 space=		' ' | '\t' | end-of-line
-comment=	'#' (!end-of-line .)* end-of-line
+comment=	'#' (
+                        '>>#' (!'#<<#' (end-of-line | .))* '#<<#'
+                        | '>=>#' (!'#<=<#' .)* '#<=<#'
+                        | (!end-of-line .)* end-of-line
+                    )
 end-of-line=	( '\n' '\r'? | '\r' '\n'? )		{ ++lineNumber; lineNumberPos=inputPos; }
 end-of-file=	!.
 
@@ -241,11 +246,7 @@ int main(int argc, char **argv)
 	  break;
 
 	case 'o':
-	  if (!(output= fopen(optarg, "w")))
-	    {
-	      perror(optarg);
-	      exit(1);
-	    }
+          outfileName = optarg;
 	  break;
 
 	case 'P':
@@ -328,6 +329,11 @@ int main(int argc, char **argv)
   if (nakedFlag) {
     LEG_print(nakedFlag);
     return 0;
+  }
+
+  if (outfileName && !(output= fopen(outfileName, "w"))) {
+    perror(optarg);
+    exit(1);
   }
 
   Rule_compile_c_header();

@@ -40,6 +40,7 @@ static int   inputPos= 0;
 static int   lineNumberPos= 0;
 static int   actionLine= 0;
 static char *fileName= 0;
+static char *outfileName= 0;
 static int   headerLine= 0;
 static Trailer *trailer= 0;
 static Header  *headers= 0;
@@ -59,6 +60,7 @@ void yyerror(char *message);
 
 void yyerror(char *message)
 {
+  yyAccept(yyctx, 0);
   fprintf(stderr, "%s:%d:%d %s", fileName, lineNumber, (inputPos-lineNumberPos), message);
   if (yyctx->__text[0]) fprintf(stderr, " near token '%s'", yyctx->__text);
   if (yyctx->__pos < yyctx->__limit || !feof(input))
@@ -129,11 +131,7 @@ int main(int argc, char **argv)
 	  break;
 
 	case 'o':
-	  if (!(output= fopen(optarg, "w")))
-	    {
-	      perror(optarg);
-	      exit(1);
-	    }
+          outfileName = optarg;
 	  break;
 
 	case 'P':
@@ -216,6 +214,11 @@ int main(int argc, char **argv)
   if (nakedFlag) {
     PEG_print(nakedFlag);
     return 0;
+  }
+
+  if (outfileName && !(output= fopen(outfileName, "w"))) {
+    perror(optarg);
+    exit(1);
   }
 
   Rule_compile_c_header();

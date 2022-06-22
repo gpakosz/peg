@@ -94,7 +94,11 @@ TILDE		<- '~' Spacing
 COLON		<- ':' Spacing
 AT		<- '@' Spacing
 Spacing		<- (Space+ / Comment)*
-Comment		<- '#' (!EndOfLine .)* EndOfLine
+Comment		<- '#' (
+                        '>>#' (!'#<<#' (EndOfLine / .))* '#<<#'
+                        / '>=>#' (!'#<=<#' .)* '#<=<#'
+                        / (!EndOfLine .)* EndOfLine
+                        )
 Space		<- ' ' / '\t' / EndOfLine
 EndOfLine	<- ( '\n' '\r'? / '\r' '\n'? )         { ++lineNumber; lineNumberPos=inputPos; }
 EndOfFile	<- !.
