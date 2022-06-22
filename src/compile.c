@@ -30,6 +30,9 @@
 #include "version.h"
 #include "tree.h"
 
+/**
+ * Global auto increment label number generator
+ */
 static int yyl(void)
 {
   static int prev= 0;
@@ -156,7 +159,11 @@ static void end(void)		{ fprintf(output, "\n  }"); }
 static void label(int n)	{ fprintf(output, "\n  l%d:;\t", n); }
 static void jump(int n)		{ fprintf(output, "  goto l%d;", n); }
 static void save(int n)		{ fprintf(output, "  int yypos%d= yy->__pos, yythunkpos%d= yy->__thunkpos;", n, n); }
+#ifdef WITH_RESTORE_IF
+static void restore(int n)	{ fprintf(output,     "  if(yy->__pos != yypos%d) yy->__pos= yypos%d; if(yy->__thunkpos != yythunkpos%d) yy->__thunkpos= yythunkpos%d;", n, n, n, n); }
+#else
 static void restore(int n)	{ fprintf(output,     "  yy->__pos= yypos%d; yy->__thunkpos= yythunkpos%d;", n, n); }
+#endif
 
 static void Node_compile_c_ko(Node *node, int ko)
 {
@@ -748,13 +755,15 @@ YY_LOCAL(void) yyDone(yycontext *yy)\n\
 \n\
 YY_LOCAL(void) yyCommit(yycontext *yy)\n\
 {\n\
-  if ((yy->__limit -= yy->__pos))\n\
-    {\n\
+  if (yy->__pos > 0) {\n\
+    if ((yy->__limit -= yy->__pos)) {\n\
       memmove(yy->__buf, yy->__buf + yy->__pos, yy->__limit);\n\
     }\n\
-  yy->__begin -= yy->__pos;\n\
-  yy->__end -= yy->__pos;\n\
-  yy->__pos= yy->__thunkpos= 0;\n\
+    yy->__begin -= yy->__pos;\n\
+    yy->__end -= yy->__pos;\n\
+    yy->__pos= 0;\n\
+  }\n\
+  yy->__thunkpos= 0;\n\
 }\n\
 \n\
 YY_LOCAL(int) yyAccept(yycontext *yy, int tp0)\n\
