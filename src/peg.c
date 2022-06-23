@@ -60,19 +60,21 @@ void yyerror(char *message);
 
 void yyerror(char *message)
 {
-  yyAccept(yyctx, 0);
-  fprintf(stderr, "%s:%d:%d %s", fileName, lineNumber, (inputPos-lineNumberPos), message);
+  int line, col;
+  yylinecol(yyctx->__buf, yyctx->__begin, &line, &col);
+  fprintf(stderr, "%s:%d:%d %s", fileName, line, col, message);
   if (yyctx->__text[0]) fprintf(stderr, " near token '%s'", yyctx->__text);
   if (yyctx->__pos < yyctx->__limit || !feof(input))
     {
       yyctx->__buf[yyctx->__limit]= '\0';
-      fprintf(stderr, " before text \"");
-      while (yyctx->__pos < yyctx->__limit)
+      fprintf(stderr, " %s text \"", yyctx->__pos ? "before" : "at");
+      int startpos = yyctx->__pos ? yyctx->__pos : yyctx->__begin;
+      while (startpos < yyctx->__limit)
 	{
-	  if ('\n' == yyctx->__buf[yyctx->__pos] || '\r' == yyctx->__buf[yyctx->__pos]) break;
-	  fputc(yyctx->__buf[yyctx->__pos++], stderr);
+	  if ('\n' == yyctx->__buf[startpos] || '\r' == yyctx->__buf[startpos]) break;
+	  fputc(yyctx->__buf[startpos++], stderr);
 	}
-      if (yyctx->__pos == yyctx->__limit)
+      if (startpos == yyctx->__limit)
 	{
 	  int c;
 	  while (EOF != (c= fgetc(input)) && '\n' != c && '\r' != c)

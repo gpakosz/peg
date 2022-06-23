@@ -1,16 +1,19 @@
 CFLAGS = -g -Wall $(OFLAGS) $(XFLAGS) -Isrc
 OFLAGS = -O3 -DNDEBUG
+#OFLAGS = -DYY_DEBUG
+#EXT=-dbg
 #OFLAGS = -pg
+
 
 OBJS = tree.o compile.o
 
-all : peg leg
+all : peg$(EXT) leg$(EXT)
 
-peg : peg.o $(OBJS)
+peg$(EXT) : peg.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@-new peg.o $(OBJS)
 	mv $@-new $@
 
-leg : leg.o $(OBJS)
+leg$(EXT) : leg.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@-new leg.o $(OBJS)
 	mv $@-new $@
 
@@ -80,8 +83,8 @@ clean : .FORCE
 spotless : clean .FORCE
 	rm -f src/*-
 	rm -rf build
-	rm -f peg
-	rm -f leg
+	rm -f peg$(EXT)
+	rm -f leg$(EXT)
 	$(SHELL) -ec '(cd examples;  $(MAKE) $@)'
 
 .FORCE :

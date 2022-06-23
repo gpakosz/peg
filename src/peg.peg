@@ -69,8 +69,8 @@ Primary		<- Identifier (
 Identifier	<- < IdentStart IdentCont* > Spacing		#ikp inserted < ... >
 IdentStart	<- [a-zA-Z_]
 IdentCont	<- IdentStart / [0-9]
-LiteralSQ	<- ['] < (!['] Char )* > [']		#ikp inserted < ... >
-LiteralDQ	<- ["] < (!["] Char )* > ["]		#ikp inserted < ... >
+LiteralSQ	<- ['] < (!['\n\r] Char )* > [']		#ikp inserted < ... >
+LiteralDQ	<- ["] < (!["\n\r] Char )* > ["]		#ikp inserted < ... >
 Class		<- '[' < (!']' Range)* > ']'		#ikp inserted < ... >
 Range		<- Char '-' ! ']' Char / Char
 Char		<- '\\' (

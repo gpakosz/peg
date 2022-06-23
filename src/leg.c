@@ -1228,7 +1228,7 @@ if (!(YY_BEGIN)) goto l66;
   }
   l67:;	
   {  int yypos68= yy->__pos, yythunkpos68= yy->__thunkpos;
-  {  int yypos69= yy->__pos, yythunkpos69= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\000\000\000\004\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l69;  goto l68;
+  {  int yypos69= yy->__pos, yythunkpos69= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\044\000\000\004\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l69;  goto l68;
   l69:;	  yy->__pos= yypos69; yy->__thunkpos= yythunkpos69;
   }  if (!yy_char(yy)) goto l68;  goto l67;
   l68:;	  yy->__pos= yypos68; yy->__thunkpos= yythunkpos68;
@@ -1262,7 +1262,7 @@ if (!(YY_BEGIN)) goto l70;
   }
   l71:;	
   {  int yypos72= yy->__pos, yythunkpos72= yy->__thunkpos;
-  {  int yypos73= yy->__pos, yythunkpos73= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\000\000\000\200\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l73;  goto l72;
+  {  int yypos73= yy->__pos, yythunkpos73= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\044\000\000\200\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l73;  goto l72;
   l73:;	  yy->__pos= yypos73; yy->__thunkpos= yythunkpos73;
   }  if (!yy_char(yy)) goto l72;  goto l71;
   l72:;	  yy->__pos= yypos72; yy->__thunkpos= yythunkpos72;
@@ -1979,24 +1979,47 @@ YY_PARSE(int) yyShowRulesProfile(yycontext *yy, FILE *fp)
 }
 #endif
 
+YY_PARSE(void) yylinecol(const unsigned char *input, int offset, int *line_out, int *col_out)
+{
+  int i, line = 1;
+
+  for (i = 0; i <= offset; ++i) {
+    if(input[i] == '\n') {
+      ++line;
+    }
+  }
+  while (i > 0) {
+    if(input[--i] == '\n') {
+      ++i;
+      break;
+    }
+  }
+  *line_out = line;
+  *col_out = 1 + offset - i;
+}
+
 #endif
 #line 175 "leg.leg"
 
 
 void yyerror(char *message)
 {
-  fprintf(stderr, "%s:%d:%d %s", fileName, lineNumber, (inputPos-lineNumberPos), message);
+  int line, col;
+  yylinecol(yyctx->__buf, yyctx->__begin, &line, &col);
+  //fprintf(stderr, "%s:%d:%d %s", fileName, lineNumber, (inputPos-lineNumberPos), message);
+  fprintf(stderr, "%s:%d:%d %s", fileName, line, col, message);
   if (yyctx->__text[0]) fprintf(stderr, " near token '%s'", yyctx->__text);
   if (yyctx->__pos < yyctx->__limit || !feof(input))
     {
       yyctx->__buf[yyctx->__limit]= '\0';
-      fprintf(stderr, " before text \"");
-      while (yyctx->__pos < yyctx->__limit)
+      fprintf(stderr, " %s text \"", yyctx->__pos ? "before" : "at");
+      int startpos = yyctx->__pos ? yyctx->__pos : yyctx->__begin;
+      while (startpos < yyctx->__limit)
 	{
-	  if ('\n' == yyctx->__buf[yyctx->__pos] || '\r' == yyctx->__buf[yyctx->__pos]) break;
-	  fputc(yyctx->__buf[yyctx->__pos++], stderr);
+	  if ('\n' == yyctx->__buf[startpos] || '\r' == yyctx->__buf[startpos]) break;
+	  fputc(yyctx->__buf[startpos++], stderr);
 	}
-      if (yyctx->__pos == yyctx->__limit)
+      if (startpos == yyctx->__limit)
 	{
 	  int c;
 	  while (EOF != (c= fgetc(input)) && '\n' != c && '\r' != c)
@@ -2144,7 +2167,7 @@ int main(int argc, char **argv)
     perror(optarg);
     exit(1);
   }
-  
+
   Rule_compile_c_header();
 
   for (; headers;) {

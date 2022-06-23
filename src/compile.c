@@ -875,6 +875,25 @@ YY_PARSE(int) yyShowRulesProfile(yycontext *yy, FILE *fp)\n\
 }\n\
 #endif\n\
 \n\
+YY_PARSE(void) yylinecol(const unsigned char *input, int offset, int *line_out, int *col_out)\n\
+{\n\
+  int i, line = 1;\n\
+\n\
+  for (i = 0; i <= offset; ++i) {\n\
+    if(input[i] == '\\n') {\n\
+      ++line;\n\
+    }\n\
+  }\n\
+  while (i > 0) {\n\
+    if(input[--i] == '\\n') {\n\
+      ++i;\n\
+      break;\n\
+    }\n\
+  }\n\
+  *line_out = line;\n\
+  *col_out = 1 + offset - i;\n\
+}\n\
+\n\
 #endif\n\
 ";
 

@@ -1205,7 +1205,7 @@ if (!(YY_BEGIN)) goto l69;
   }
   l70:;	
   {  int yypos71= yy->__pos, yythunkpos71= yy->__thunkpos;
-  {  int yypos72= yy->__pos, yythunkpos72= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\000\000\000\004\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l72;  goto l71;
+  {  int yypos72= yy->__pos, yythunkpos72= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\044\000\000\004\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l72;  goto l71;
   l72:;	  yy->__pos= yypos72; yy->__thunkpos= yythunkpos72;
   }  if (!yy_Char(yy)) goto l71;  goto l70;
   l71:;	  yy->__pos= yypos71; yy->__thunkpos= yythunkpos71;
@@ -1239,7 +1239,7 @@ if (!(YY_BEGIN)) goto l73;
   }
   l74:;	
   {  int yypos75= yy->__pos, yythunkpos75= yy->__thunkpos;
-  {  int yypos76= yy->__pos, yythunkpos76= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\000\000\000\200\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l76;  goto l75;
+  {  int yypos76= yy->__pos, yythunkpos76= yy->__thunkpos;  if (!yymatchClass(yy, (unsigned char *)"\000\044\000\000\200\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000")) goto l76;  goto l75;
   l76:;	  yy->__pos= yypos76; yy->__thunkpos= yythunkpos76;
   }  if (!yy_Char(yy)) goto l75;  goto l74;
   l75:;	  yy->__pos= yypos75; yy->__thunkpos= yythunkpos75;
@@ -1936,5 +1936,24 @@ YY_PARSE(int) yyShowRulesProfile(yycontext *yy, FILE *fp)
   return 0;
 }
 #endif
+
+YY_PARSE(void) yylinecol(const unsigned char *input, int offset, int *line_out, int *col_out)
+{
+  int i, line = 1;
+
+  for (i = 0; i <= offset; ++i) {
+    if(input[i] == '\n') {
+      ++line;
+    }
+  }
+  while (i > 0) {
+    if(input[--i] == '\n') {
+      ++i;
+      break;
+    }
+  }
+  *line_out = line;
+  *col_out = 1 + offset - i;
+}
 
 #endif
