@@ -415,10 +415,10 @@ static void Rule_compile_c2(Node *node)
       if (!safe) save(0);
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPush, %d, 0);", countVariables(node->rule.variables));
-      fprintf(output, "\n  yyprintf((stderr, \"%%s\\n\", \"%s\"));", node->rule.name);
+      fprintf(output, "\n  yyprintf((stderr, \"%%*.s%%s\\n\", yy->__calldepth++, __yyindentspaces, \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
       fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_succeed_count[%d];\n#endif", node->rule.id);
-      fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
+      fprintf(output, "\n  yyprintf((stderr, \"%%*.s  ok   %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  return 1;");
@@ -427,7 +427,7 @@ static void Rule_compile_c2(Node *node)
 	  label(ko);
 	  restore(0);
 	  fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_fail_count[%d];\n#endif", node->rule.id);
-	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @%%d:%%d %%s\\n\", \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
+	  fprintf(output, "\n  yyprintf((stderr, \"%%*.s  fail %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
 	  fprintf(output, "\n  return 0;");
 	}
       fprintf(output, "\n}");
@@ -483,6 +483,7 @@ static char *preamble= "\
 #endif\n\
 #ifdef YY_DEBUG\n\
 # define yyprintf(args)	fprintf args\n\
+const char *__yyindentspaces = \"                                              \";\n\
 #else\n\
 # define yyprintf(args)\n\
 #endif\n\
@@ -525,6 +526,7 @@ struct _yycontext {\n\
   int       __linenopos;\n\
 #ifdef YY_DEBUG\n\
   char      __escapeCharBuf[4];\n\
+  int       __calldepth;\n\
 #endif\n\
 #ifdef YY_CTX_MEMBERS\n\
   YY_CTX_MEMBERS\n\
@@ -625,10 +627,10 @@ YY_LOCAL(int) yymatchChar(yycontext *yy, int c)\n\
   if ((unsigned char)yy->__buf[yy->__pos] == c)\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchChar(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"%*.s  ok   yymatchChar(yy, %s) @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchChar(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"%*.s  fail yymatchChar(yy, %s) @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -638,10 +640,10 @@ YY_LOCAL(int) yymatchCharCaseInsensitive(yycontext *yy, int c)\n\
   if (tolower(yy->__buf[yy->__pos]) == tolower(c))\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"%*.s  ok   yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"%*.s  fail yymatchCharCaseInsensitive(yy, %s) @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yyescapedChar(yy, c), yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -687,10 +689,10 @@ YY_LOCAL(int) yymatchClass(yycontext *yy, unsigned char *bits)\n\
   if (bits[c >> 3] & (1 << (c & 7)))\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchClass @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"%*.s  ok   yymatchClass @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchClass @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"%*.s  fail yymatchClass @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
@@ -702,10 +704,10 @@ YY_LOCAL(int) yymatchClassCaseInsensitive(yycontext *yy, unsigned char *bits)\n\
   if (bits[c >> 3] & (1 << (c & 7)))\n\
     {\n\
       ++yy->__pos;\n\
-      yyprintf((stderr, \"  ok   yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+      yyprintf((stderr, \"%*.s  ok   yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
       return 1;\n\
     }\n\
-  yyprintf((stderr, \"  fail yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
+  yyprintf((stderr, \"%*.s  fail yymatchClassCaseInsensitive @%d:%d %s\\n\", yy->__calldepth, __yyindentspaces, yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));\n\
   return 0;\n\
 }\n\
 \n\
