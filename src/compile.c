@@ -418,7 +418,8 @@ static void Rule_compile_c2(Node *node)
       fprintf(output, "\n  yyprintf((stderr, \"%%*.s%%s\\n\", yy->__calldepth++, __yyindentspaces, \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
       fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_succeed_count[%d];\n#endif", node->rule.id);
-      fprintf(output, "\n  yyprintf((stderr, \"%%*.s  ok   %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
+      fprintf(output, "\n  yyprintf((stderr, \"%%*.s  ok   %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+%s));",
+                node->rule.name, !safe ? "yypos0" : "yy->__pos");
       if (node->rule.variables)
 	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
       fprintf(output, "\n  return 1;");
@@ -427,7 +428,8 @@ static void Rule_compile_c2(Node *node)
 	  label(ko);
 	  restore(0);
 	  fprintf(output, "\n#ifdef YY_RULES_PROFILE\n++yy->__rules_fail_count[%d];\n#endif", node->rule.id);
-	  fprintf(output, "\n  yyprintf((stderr, \"%%*.s  fail %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+yy->__pos));", node->rule.name);
+	  fprintf(output, "\n  yyprintf((stderr, \"%%*.s  fail %%s @%%d:%%d %%s\\n\", yy->__calldepth--, __yyindentspaces, \"%s\", yy->__lineno, yy->__inputpos-yy->__linenopos, yy->__buf+%s));",
+                  node->rule.name, !safe ? "yypos0" : "yy->__pos");
 	  fprintf(output, "\n  return 0;");
 	}
       fprintf(output, "\n}");
@@ -568,8 +570,12 @@ YY_LOCAL(const char *) yyescapedChar(yycontext *yy, int ch)\n\
 #define YY_INPUT(yy, buf, result, max_size)		\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, ++yy->__inputpos, 1); \\\n\
-    yyprintf((stderr, \"<%s>\", yyescapedChar(yy, yyc)));\\\n\
+    result= (EOF != yyc);\\\n\
+    if(result) {\\\n\
+      *(buf)= yyc;\\\n\
+      ++yy->__inputpos;\\\n\
+      yyprintf((stderr, \"<%s>\\n\", yyescapedChar(yy, yyc)));\\\n\
+    }\\\n\
   }\n\
 #endif\n\
 #else\n\
@@ -583,8 +589,12 @@ yycontext *yyctx= &_yyctx;\n\
 #define YY_INPUT(buf, result, max_size)			\\\n\
   {							\\\n\
     int yyc= getchar();					\\\n\
-    result= (EOF == yyc) ? 0 : (*(buf)= yyc, ++yyctx->__inputpos, 1); \\\n\
-    yyprintf((stderr, \"<%s>\", yyescapedChar(yyctx, yyc)));\\\n\
+    result= (EOF != yyc);\\\n\
+    if(result) {\\\n\
+      *(buf)= yyc;\\\n\
+      ++yyctx->__inputpos;\\\n\
+      yyprintf((stderr, \"<%s>\", yyescapedChar(yyctx, yyc)));\\\n\
+    }\\\n\
   }\n\
 #endif\n\
 #endif\n\
