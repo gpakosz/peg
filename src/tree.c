@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-07-15 10:25:14 by piumarta on zora
+ * Last edited: 2023-11-19 12:21:04 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -164,7 +164,15 @@ Node *makeAction(int lineNumber, char *text)
 Node *makeInline(char *text)
 {
   Node *node= newNode(Inline);
+  assert(thisRule);
   node->inLine.text= strdup(text);
+  node->inLine.rule= thisRule;
+  {
+    char *ptr;
+    for (ptr= node->inLine.text;  *ptr;  ++ptr)
+      if ('$' == ptr[0] && '$' == ptr[1])
+	ptr[1]= ptr[0]= '_';
+  }
   return node;
 }
 

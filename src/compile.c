@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2023-11-19 09:20:46 by piumarta on zora
+ * Last edited: 2023-11-18 21:07:50 by piumarta on debian
  */
 
 #include <stdio.h>
@@ -139,6 +139,52 @@ static void jump(int n)		{ fprintf(output, "  goto l%d;", n); }
 static void save(int n)		{ fprintf(output, "  int yypos%d= yy->__pos, yythunkpos%d= yy->__thunkpos;", n, n); }
 static void restore(int n)	{ fprintf(output,     "  yy->__pos= yypos%d; yy->__thunkpos= yythunkpos%d;", n, n); }
 
+static int countVariables(Node *node)
+{
+  int count= 0;
+  while (node)
+    {
+      ++count;
+      node= node->variable.next;
+    }
+  return count;
+}
+
+static void allocateVariables(Node *node)
+{
+  int count= 0;
+  while (node)
+    {
+      node->variable.offset= --count;
+      node= node->variable.next;
+    }
+}
+
+static void defineVariables(Node *node)
+{
+  while (node)
+    {
+      fprintf(output, "#define %s yy->__val[%d]\n", node->variable.name, node->variable.offset);
+      node= node->variable.next;
+    }
+  fprintf(output, "#define __ yy->__\n");
+  fprintf(output, "#define yypos yy->__pos\n");
+  fprintf(output, "#define yythunkpos yy->__thunkpos\n");
+}
+
+static void undefineVariables(Node *node)
+{
+  fprintf(output, "#undef yythunkpos\n");
+  fprintf(output, "#undef yypos\n");
+  fprintf(output, "#undef yy\n");
+  while (node)
+    {
+      fprintf(output, "#undef %s\n", node->variable.name);
+      node= node->variable.next;
+    }
+}
+
+
 static void Node_compile_c_ko(Node *node, int ko)
 {
   assert(node);
@@ -155,8 +201,10 @@ static void Node_compile_c_ko(Node *node, int ko)
 
     case Name:
       fprintf(output, "  if (!yy_%s(yy)) goto l%d;", node->name.rule->rule.name, ko);
-      if (node->name.variable)
-	fprintf(output, "  yyDo(yy, yySet, %d, 0);", node->name.variable->variable.offset);
+      if (node->name.variable) {
+	int n = node->name.variable->variable.offset;
+	fprintf(output, "  yySet(yy, 0, %d);  yyDo(yy, yySet, %d, 0);", n, n);
+      }
       break;
 
     case Character:
@@ -188,11 +236,13 @@ static void Node_compile_c_ko(Node *node, int ko)
 
     case Inline:
       fprintf(output, "  yyText(yy, yy->__begin, yy->__end);\n");
+      defineVariables(node->inLine.rule->rule.variables);
       fprintf(output, "#define yytext yy->__text\n");
       fprintf(output, "#define yyleng yy->__textlen\n");
       fprintf(output, "%s;\n", node->inLine.text);
       fprintf(output, "#undef yytext\n");
       fprintf(output, "#undef yyleng\n");
+      undefineVariables(node->inLine.rule->rule.variables);
       break;
 
     case Predicate:
@@ -323,44 +373,6 @@ static void Node_compile_c_ko(Node *node, int ko)
 }
 
 
-static int countVariables(Node *node)
-{
-  int count= 0;
-  while (node)
-    {
-      ++count;
-      node= node->variable.next;
-    }
-  return count;
-}
-
-static void defineVariables(Node *node)
-{
-  int count= 0;
-  while (node)
-    {
-      fprintf(output, "#define %s yy->__val[%d]\n", node->variable.name, --count);
-      node->variable.offset= count;
-      node= node->variable.next;
-    }
-  fprintf(output, "#define __ yy->__\n");
-  fprintf(output, "#define yypos yy->__pos\n");
-  fprintf(output, "#define yythunkpos yy->__thunkpos\n");
-}
-
-static void undefineVariables(Node *node)
-{
-  fprintf(output, "#undef yythunkpos\n");
-  fprintf(output, "#undef yypos\n");
-  fprintf(output, "#undef yy\n");
-  while (node)
-    {
-      fprintf(output, "#undef %s\n", node->variable.name);
-      node= node->variable.next;
-    }
-}
-
-
 static void Rule_compile_c2(Node *node)
 {
   assert(node);
@@ -379,19 +391,27 @@ static void Rule_compile_c2(Node *node)
 
       fprintf(output, "\nYY_RULE(int) yy_%s(yycontext *yy)\n{", node->rule.name);
       if (!safe) save(0);
-      if (node->rule.variables)
-	fprintf(output, "  yyDo(yy, yyPush, %d, 0);", countVariables(node->rule.variables));
+      if (node->rule.variables) {
+	int n= countVariables(node->rule.variables);
+	fprintf(output, "  yyEnter(yy, %d);  yyDo(yy, yyPush, %d, 0);", n, n);
+      }
       fprintf(output, "\n  yyprintf((stderr, \"%%s\\n\", \"%s\"));", node->rule.name);
       Node_compile_c_ko(node->rule.expression, ko);
       fprintf(output, "\n  yyprintf((stderr, \"  ok   %%s @ %%s\\n\", \"%s\", yy->__buf+yy->__pos));", node->rule.name);
-      if (node->rule.variables)
-	fprintf(output, "  yyDo(yy, yyPop, %d, 0);", countVariables(node->rule.variables));
+      if (node->rule.variables) {
+	int n= countVariables(node->rule.variables);
+	fprintf(output, "\n  yyLeave(yy, %d);  yyDo(yy, yyPop, %d, 0);", n, n);
+      }
       fprintf(output, "\n  return 1;");
       if (!safe)
 	{
 	  label(ko);
 	  restore(0);
 	  fprintf(output, "\n  yyprintf((stderr, \"  fail %%s @ %%s\\n\", \"%s\", yy->__buf+yy->__pos));", node->rule.name);
+	  if (node->rule.variables) {
+	      int n= countVariables(node->rule.variables);
+	      fprintf(output, "\n  yyLeave(yy, %d);", n);
+	  }
 	  fprintf(output, "\n  return 0;");
 	}
       fprintf(output, "\n}");
@@ -679,6 +699,9 @@ YY_LOCAL(void) yySet(yycontext *yy, char *text, int count)   { yy->__val[count]=
 \n\
 #define	YYACCEPT	yyAccept(yy, yythunkpos0)\n\
 \n\
+#define yyEnter(YY, N) yyPush(YY, 0, N)\n\
+#define yyLeave(YY, N) yyPop (YY, 0, N)\n\
+\n\
 ";
 
 static char *footer= "\n\
@@ -823,8 +846,10 @@ void Rule_compile_c(Node *node, int nolines)
     consumesInput(n);
 
   fprintf(output, "%s", preamble);
-  for (n= node;  n;  n= n->rule.next)
+  for (n= node;  n;  n= n->rule.next) {
     fprintf(output, "YY_RULE(int) yy_%s(yycontext *yy); /* %d */\n", n->rule.name, n->rule.id);
+    allocateVariables(n->rule.variables);
+  }
   fprintf(output, "\n");
   for (n= actions;  n;  n= n->action.list)
     {

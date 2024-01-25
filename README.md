@@ -26,6 +26,9 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.20** ([zip](../../archive/0.1.20.zip), [tar.gz](../../archive/0.1.20.tar.gz)) &mdash; 2019-11-19  
+Experimental support for variables and semantic values in ‘inline actions’ executed during recognition (separate from the parser actions that are run after the input is fully recognised).  
+Don't print `#line` directives for headers if `-P` was given and pathnames on WIN32 have `\` changed to `/` to keep `#line` directives happy (thanks to Ben Hines for the problem report).  
 * **0.1.19** ([zip](../../archive/0.1.19.zip), [tar.gz](../../archive/0.1.19.tar.gz)) &mdash; 2019-03-06  
 Experimental support for re-entrant parsing through `yyparsefrom_r()`.  
 * **0.1.18** ([zip](../../archive/0.1.18.zip), [tar.gz](../../archive/0.1.18.tar.gz)) &mdash; 2016-07-22  

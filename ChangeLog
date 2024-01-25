@@ -1,3 +1,23 @@
+2023-11-19  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
+
+	* src/version.h (PEG_LEVEL): Version is 0.1.20.
+
+	* src/tree.c (makeInline): Inline nodes remember their parent rule.
+	Replace "$$" in inline actions with "__".
+	* src/tree.h (struct Inline): Inline nodes remember their parent rule.
+
+	* src/leg.leg (main): Filenames on WIN32 have \ changed to /, keeping
+	#line directives happy.
+	(main): Don't print #line directives for headers if nolineFlag is set.
+
+	* src/compile.c (allocateVariables): Separated from defineVariables.
+	(Node_compile_c_ko): Allocates and sets local variables during parse.
+	(Rule_compile_c2): Generate yyEnter and yyLeave if rule has variables.
+	(preamble): Macros yyEnter and yyLeave manage local variable space on
+	stack during parsing.
+
+	* Makefile (testleg): Quickly tests local changes.
+
 2023-03-06  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
 
 	* src/version.h (PEG_LEVEL): Version 0.1.19.

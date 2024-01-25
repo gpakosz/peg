@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2023-10-29 12:52:56 by piumarta on zora
+# Last edited: 2023-11-19 12:06:51 by piumarta on zora
 
 %{
 # include "tree.h"
@@ -284,7 +284,10 @@ int main(int argc, char **argv)
 		  perror(*argv);
 		  exit(1);
 		}
-	      fileName= *argv;
+	      fileName= strdup(*argv);
+#            if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+	      for (char *p= fileName;  *p;  ++p) if ('\\' == *p) *p= '/';
+#            endif
 	    }
 	  lineNumber= 1;
 	  if (!yyparse())
@@ -303,8 +306,10 @@ int main(int argc, char **argv)
 
   Rule_compile_c_header();
 
-  for (; headers;  headers= headers->next)
-    fprintf(output, "#line %i \"%s\"\n%s\n", headers->line, fileName, headers->text);
+  for (; headers;  headers= headers->next) {
+    if (!nolinesFlag) fprintf(output, "#line %i \"%s\"\n", headers->line, fileName);
+    fprintf(output, "%s\n", headers->text);
+  }
 
   if (rules)
     Rule_compile_c(rules, nolinesFlag);

@@ -14,6 +14,12 @@ leg : leg.o $(OBJS)
 	$(CC) $(CFLAGS) -o $@-new leg.o $(OBJS)
 	mv $@-new $@
 
+testleg : .FORCE
+	./leg -o $@.c src/leg.leg
+	$(CC) $(CFLAGS) -Wno-unused -Wno-array-bounds -o $@ leg.c src/compile.c src/tree.c
+	./$@ -o $@.c.c src/leg.leg
+	diff $@.c $@.c.c
+
 ROOT	=
 PREFIX	= /usr/local
 BINDIR	= $(ROOT)$(PREFIX)/bin

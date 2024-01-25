@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-07-22 09:42:48 by piumarta on zora.local
+ * Last edited: 2023-11-19 12:15:36 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -35,7 +35,7 @@ struct Character { int type;  Node *next;   char *value;								};
 struct String	 { int type;  Node *next;   char *value;								};
 struct Class	 { int type;  Node *next;   unsigned char *value;							};
 struct Action	 { int type;  Node *next;   char *text;	  Node *list;  char *name;  Node *rule;  int line;		};
-struct Inline    { int type;  Node *next;   char *text;									};
+struct Inline    { int type;  Node *next;   char *text;   Node *rule;							};
 struct Predicate { int type;  Node *next;   char *text;									};
 struct Error	 { int type;  Node *next;   Node *element;  char *text;							};
 struct Alternate { int type;  Node *next;   Node *first;  Node *last;							};
