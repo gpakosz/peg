@@ -26,6 +26,8 @@ distribute them any way you like.
 
 ## Version history
 
+* **0.1.19** ([zip](../../archive/0.1.19.zip), [tar.gz](../../archive/0.1.19.tar.gz)) &mdash; 2019-03-06  
+Experimental support for re-entrant parsing through `yyparsefrom_r()`.  
 * **0.1.18** ([zip](../../archive/0.1.18.zip), [tar.gz](../../archive/0.1.18.tar.gz)) &mdash; 2016-07-22  
 Add `-P` option to disable `#line` directives.  
 Emit `#line` directives for all actions.  

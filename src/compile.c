@@ -13,7 +13,7 @@
  * 
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
  * 
- * Last edited: 2016-07-22 09:43:05 by piumarta on zora.local
+ * Last edited: 2023-11-19 09:20:46 by piumarta on zora
  */
 
 #include <stdio.h>
@@ -432,6 +432,9 @@ static char *preamble= "\
 #ifndef YYPARSE\n\
 #define YYPARSE		yyparse\n\
 #endif\n\
+#ifndef YYPARSEFROM_R\n\
+#define YYPARSEFROM_R	yyparsefrom_r\n\
+#endif\n\
 #ifndef YYPARSEFROM\n\
 #define YYPARSEFROM	yyparsefrom\n\
 #endif\n\
@@ -619,10 +622,10 @@ YY_LOCAL(int) yyText(yycontext *yy, int begin, int end)\n\
   return yyleng;\n\
 }\n\
 \n\
-YY_LOCAL(void) yyDone(yycontext *yy)\n\
+YY_LOCAL(void) yyDone(yycontext *yy, int yythunkpos)\n\
 {\n\
   int pos;\n\
-  for (pos= 0;  pos < yy->__thunkpos;  ++pos)\n\
+  for (pos= yythunkpos;  pos < yy->__thunkpos;  ++pos)\n\
     {\n\
       yythunk *thunk= &yy->__thunks[pos];\n\
       int yyleng= thunk->end ? yyText(yy, thunk->begin, thunk->end) : thunk->begin;\n\
@@ -652,7 +655,7 @@ YY_LOCAL(int) yyAccept(yycontext *yy, int tp0)\n\
     }\n\
   else\n\
     {\n\
-      yyDone(yy);\n\
+      yyDone(yy, 0);\n\
       yyCommit(yy);\n\
     }\n\
   return 1;\n\
@@ -684,9 +687,10 @@ static char *footer= "\n\
 \n\
 typedef int (*yyrule)(yycontext *yy);\n\
 \n\
-YY_PARSE(int) YYPARSEFROM(YY_CTX_PARAM_ yyrule yystart)\n\
+YY_PARSE(int) YYPARSEFROM_R(YY_CTX_PARAM_ yyrule yystart)\n\
 {\n\
-  int yyok;\n\
+  int yyok, yythunkpos;\n\
+  YYSTYPE *yyval;\n\
   if (!yyctx->__buflen)\n\
     {\n\
       yyctx->__buflen= YY_BUFFER_SIZE;\n\
@@ -696,14 +700,25 @@ YY_PARSE(int) YYPARSEFROM(YY_CTX_PARAM_ yyrule yystart)\n\
       yyctx->__thunkslen= YY_STACK_SIZE;\n\
       yyctx->__thunks= (yythunk *)YY_MALLOC(yyctx, sizeof(yythunk) * yyctx->__thunkslen);\n\
       yyctx->__valslen= YY_STACK_SIZE;\n\
-      yyctx->__vals= (YYSTYPE *)YY_MALLOC(yyctx, sizeof(YYSTYPE) * yyctx->__valslen);\n\
+      yyctx->__val= yyctx->__vals= (YYSTYPE *)YY_MALLOC(yyctx, sizeof(YYSTYPE) * yyctx->__valslen);\n\
       yyctx->__begin= yyctx->__end= yyctx->__pos= yyctx->__limit= yyctx->__thunkpos= 0;\n\
     }\n\
   yyctx->__begin= yyctx->__end= yyctx->__pos;\n\
+  yythunkpos= yyctx->__thunkpos;\n\
+  yyval= yyctx->__val;\n\
+  yyok= yystart(yyctx);\n\
+  if (yyok) yyDone(yyctx, yythunkpos);\n\
+  yyctx->__thunkpos= yythunkpos;\n\
+  yyctx->__val= yyval;\n\
+  return yyok;\n\
+}\n\
+\n\
+YY_PARSE(int) YYPARSEFROM(YY_CTX_PARAM_ yyrule yystart)\n\
+{\n\
+  int yyok;\n\
   yyctx->__thunkpos= 0;\n\
   yyctx->__val= yyctx->__vals;\n\
-  yyok= yystart(yyctx);\n\
-  if (yyok) yyDone(yyctx);\n\
+  yyok= YYPARSEFROM_R(YY_CTX_ARG_ yystart);\n\
   yyCommit(yyctx);\n\
   return yyok;\n\
 }\n\

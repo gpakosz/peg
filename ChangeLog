@@ -1,3 +1,12 @@
+2023-03-06  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
+
+	* src/version.h (PEG_LEVEL): Version 0.1.19.
+	* src/compile.c: Allow re-entrant parsing.
+	Macro YYPARSEFROM_R names the function yyparsefrom_r().
+	yyDone takes second argument, the yythunkpos at which actions start.
+	yyparsefrom_r saves and restores thunkpos and val state during recursive parse.
+	yyparsefrom resets thunkpos, val before recursive parse.
+
 2016-07-22  Ian Piumarta  <com -dot- gmail -at- piumarta (backwards)>
 
 	* src/version.h (PEG_LEVEL): Version 0.1.18.

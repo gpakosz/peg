@@ -15,7 +15,7 @@
 # 
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
 # 
-# Last edited: 2016-07-22 09:45:53 by piumarta on zora.local
+# Last edited: 2023-10-29 12:52:56 by piumarta on zora
 
 %{
 # include "tree.h"
@@ -155,7 +155,7 @@ TILDE=		'~' -
 RPERCENT=	'%}' -
 
 -=		(space | comment)*
-space=		' ' | '\t' | end-of-line
+space=		' ' | '\t' | '\f' | end-of-line
 comment=	'#' (!end-of-line .)* end-of-line
 end-of-line=	( '\r\n' | '\n' | '\r' )		{ ++lineNumber }
 end-of-file=	!.
@@ -311,7 +311,7 @@ int main(int argc, char **argv)
 
   if (trailer) {
     if (!nolinesFlag)
-      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName, trailer);
+      fprintf(output, "#line %i \"%s\"\n", trailerLine, fileName);
     fprintf(output, "%s\n", trailer);
   }
 
